@@ -27,21 +27,4 @@ const work = defineCollection({
     }),
 });
 
-const playground = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/playground' }),
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    order: z.number(),
-    /** Matches a file in src/experiments/ */
-    experiment: z.string(),
-    tags: z.array(z.string()),
-    /** Accent color for the tile */
-    hue: z.string(),
-    interaction: z.string(),
-    sound: z.boolean().default(false),
-    draft: z.boolean().default(false),
-  }),
-});
-
-export const collections = { work, playground };
+export const collections = { work };

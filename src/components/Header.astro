@@ -5,7 +5,6 @@ const { contactHref = '#contact' } = Astro.props as { contactHref?: string };
 const path = Astro.url.pathname.replace(/\.html$/, '');
 const nav = [
   { href: '/#work', label: 'Work', match: (p: string) => p.startsWith('/work') },
-  { href: '/playground', label: 'Playground', match: (p: string) => p.startsWith('/playground') },
   { href: '/about', label: 'About', match: (p: string) => p.startsWith('/about') },
   { href: contactHref, label: 'Contact', match: () => false },
 ];

@@ -62,7 +62,8 @@ main { display: block; }
 html[data-nav='index'] main, html[data-nav='index'] .site-foot { padding-left: 200px; }
 
 /* Corners */
-.nv--corner { justify-content: space-between; height: var(--header-h); padding-top: env(safe-area-inset-top, 0px); mix-blend-mode: difference; color: #fff; }
+.nv--corner { justify-content: space-between; height: var(--header-h); padding-top: env(safe-area-inset-top, 0px); color: #fff; }
+html[data-nav='corner'] .site-nav { mix-blend-mode: difference; }
 .nv--corner .nv-name { font-weight: 600; }
 .crn-btn { font-weight: 500; }
 .nv-mbtn { display: none; }

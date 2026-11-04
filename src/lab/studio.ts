@@ -61,12 +61,41 @@ function show(msg: string) {
 // Option changes
 document.querySelectorAll<HTMLInputElement>('.opt input').forEach((input) =>
   input.addEventListener('change', () => {
+    previewing = false;
+    clearTimeout(hoverTimer);
     config = { ...config, [input.name]: input.value };
     save();
     syncPanel();
     send(input.name);
   }),
 );
+
+// Hover an option to preview it; leaving the list restores the saved choice.
+const noHoverPreview = new Set(['pt', 'intro', 'case', 'scroll']);
+let hoverTimer = 0;
+let previewing = false;
+document.querySelectorAll<HTMLElement>('.opts').forEach((list) => {
+  const group = list.closest<HTMLElement>('[data-group]')?.dataset.group ?? '';
+  if (noHoverPreview.has(group)) return;
+  list.querySelectorAll<HTMLLabelElement>('.opt').forEach((opt) => {
+    opt.addEventListener('pointerenter', (e) => {
+      if ((e as PointerEvent).pointerType !== 'mouse') return;
+      const value = opt.querySelector('input')!.value;
+      clearTimeout(hoverTimer);
+      hoverTimer = window.setTimeout(() => {
+        if (value === config[group] && !previewing) return;
+        previewing = true;
+        frame.contentWindow?.postMessage({ type: 'lab:config', config: { ...config, [group]: value }, changed: group, preview: true }, location.origin);
+      }, 140);
+    });
+  });
+  list.addEventListener('pointerleave', () => {
+    clearTimeout(hoverTimer);
+    if (!previewing) return;
+    previewing = false;
+    hoverTimer = window.setTimeout(() => send(group), 60);
+  });
+});
 
 // Presets
 document.querySelectorAll<HTMLButtonElement>('[data-preset]').forEach((b) =>

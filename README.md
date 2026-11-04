@@ -28,8 +28,7 @@ Then open http://localhost:4321. Changes appear instantly.
 | Case studies (text) | `src/content/work/*.mdx` |
 | Case study images | `src/assets/work/<project>/` |
 | Videos | `public/media/` |
-| Playground experiments (text) | `src/content/playground/*.md` |
-| Playground experiments (code) | `src/experiments/*.ts` |
+| Design Studio | `src/lab/`, `src/pages/lab/` |
 | Colors, type sizes, spacing | top of `src/styles/global.css` |
 | Pages | `src/pages/` |
 | CV | `public/files/john-beno-lakshman-cv.pdf` |
@@ -51,15 +50,13 @@ Videos must be under 25 MB each (Cloudflare's limit). To compress one:
 ffmpeg -i input.mov -an -vf "scale=1600:-2" -c:v libx264 -crf 27 -preset slow -movflags +faststart public/media/output.mp4
 ```
 
-## Add a playground experiment
+## Design Studio
 
-1. Create `src/experiments/my-idea.ts` exporting a `mount(host, { mode })` function
-   that returns a cleanup function. `mode` is `'tile'` on the playground wall and
-   `'full'` on the experiment's own page. `pin-table.ts` is a good starting point.
-2. Register it in `src/experiments/index.ts`.
-3. Create `src/content/playground/my-idea.md` with a title, description, hue and notes.
-
-It appears on the wall, in the list view and in the sitemap automatically.
+`/lab` is a private configurator (hidden from search engines) for trying layouts,
+typography, colors, motion and page transitions on the real content. Its code lives in
+`src/lab/`, `src/components/lab/`, `src/styles/lab/` and `src/pages/lab/`. Use
+**Copy my setup** there and send the result to Claude to build that combination into
+the real site.
 
 ## Search engine setup built into the site
 

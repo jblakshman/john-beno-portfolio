@@ -3,7 +3,6 @@ import { getCollection } from 'astro:content';
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import ProjectRow from '../components/ProjectRow.astro';
-import PlaygroundTeaser from '../components/PlaygroundTeaser.astro';
 import { site } from '../site.config';
 import { graph, person, website } from '../lib/schema';
 import portrait from '../assets/about/portrait-standing.jpg';
@@ -63,7 +62,6 @@ const jsonLd = graph(website(), person(new URL(portraitSchema.src, site.url).hre
     </div>
   </section>
 
-  <PlaygroundTeaser />
 </Base>
 
 <style>

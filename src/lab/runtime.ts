@@ -492,11 +492,13 @@ try {
 /* ------------------------------------------------------------------ */
 /* Apply configuration                                                 */
 /* ------------------------------------------------------------------ */
-function apply(config: Config, changed?: string) {
+function apply(config: Config, changed?: string, preview = false) {
   for (const k of Object.keys(defaults)) if (config[k]) root.setAttribute(`data-${k}`, config[k]);
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-  } catch {}
+  if (!preview) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    } catch {}
+  }
   if (!changed || ['type', 'hero', 'layout', 'reveal', 'nav'].includes(changed)) {
     requestAnimationFrame(() => {
       fitAll();
@@ -510,19 +512,23 @@ function apply(config: Config, changed?: string) {
     setupScroll();
   }
   if (changed === 'intro') runIntro(true);
-  if (changed === 'layout') document.getElementById('work')?.scrollIntoView({ block: 'start' });
+  if (changed === 'layout' && !preview) document.getElementById('work')?.scrollIntoView({ block: 'start' });
+  if (changed === 'layout' && preview) {
+    const w = document.getElementById('work');
+    if (w && w.getBoundingClientRect().top > window.innerHeight) w.scrollIntoView({ block: 'start' });
+  }
   if (changed === 'hero') window.scrollTo({ top: 0 });
   if (changed === 'case' && !document.querySelector('.case')) {
     const first = document.querySelector<HTMLAnchorElement>('a[href^="/lab/p/work/"]');
     if (first) location.href = first.href;
   }
-  if (changed === 'images' || changed === 'hover') document.getElementById('work')?.scrollIntoView({ block: 'start' });
+  if ((changed === 'images' || changed === 'hover') && !preview) document.getElementById('work')?.scrollIntoView({ block: 'start' });
   if (changed === 'progress' || changed === 'cursor') requestScroll();
 }
 
 window.addEventListener('message', (e) => {
   if (e.origin !== location.origin || !e.data || typeof e.data !== 'object') return;
-  if (e.data.type === 'lab:config') apply(e.data.config, e.data.changed);
+  if (e.data.type === 'lab:config') apply(e.data.config, e.data.changed, !!e.data.preview);
   if (e.data.type === 'lab:try-transition') {
     const onCase = !!document.querySelector('.case');
     if (onCase) history.length > 1 ? history.back() : (location.href = '/lab/p');
