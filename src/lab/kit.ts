@@ -94,12 +94,12 @@ document.querySelectorAll<HTMLElement>('[data-ios]').forEach((app) => {
   app.querySelectorAll('[data-sheet-close]').forEach((b) => b.addEventListener('click', close));
   dim.addEventListener('click', close);
 
-  let startY = 0, startT = 0, base = 0, lastY = 0, lastT = 0, vel = 0, dragging = false;
+  let startY = 0, base = 0, lastY = 0, lastT = 0, vel = 0, dragging = false;
   sheet.addEventListener('pointerdown', (e) => {
     if ((e.target as HTMLElement).closest('button')) return;
     dragging = true;
     startY = lastY = e.clientY;
-    startT = lastT = performance.now();
+    lastT = performance.now();
     base = y;
     sheet.setPointerCapture(e.pointerId);
     sheet.removeAttribute('data-anim');

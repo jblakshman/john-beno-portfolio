@@ -17,7 +17,7 @@ const meta = [
   { k: 'Context', v: d.context },
 ];
 const vt = `--vt: w-${project.id}`;
-const pic = (sizes: string, cls = 'fill') => ({ src: d.cover, alt: d.coverAlt, formats: ['avif', 'webp'] as const, fallbackFormat: 'jpg' as const, widths: [800, 1200, 1600, 2200], sizes, loading: 'eager' as const, class: cls });
+const pic = (sizes: string, cls = 'fill') => ({ src: d.cover, alt: d.coverAlt, formats: ['avif', 'webp'] as ('avif' | 'webp')[], fallbackFormat: 'jpg' as const, widths: [800, 1200, 1600, 2200], sizes, loading: 'eager' as const, class: cls });
 ---
 
 <LabPreview title={d.title}>
