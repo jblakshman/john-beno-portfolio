@@ -250,21 +250,38 @@ uniform float uAlpha;
 out vec4 o;
 void main() { float d = length(vQ); o = vec4(uColor, uAlpha * pow(max(0.0, 1.0 - d), 2.2)); }`;
 
-function program(gl: WebGL2RenderingContext, vs: string, fs: string) {
+/** Starts compiling a program without waiting for the GPU driver. */
+function startProgram(gl: WebGL2RenderingContext, vs: string, fs: string) {
   const sh = (t: number, src: string) => {
     const s = gl.createShader(t)!;
     gl.shaderSource(s, src);
     gl.compileShader(s);
-    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s) ?? 'shader');
     return s;
   };
+  const v = sh(gl.VERTEX_SHADER, vs), f = sh(gl.FRAGMENT_SHADER, fs);
   const p = gl.createProgram()!;
-  gl.attachShader(p, sh(gl.VERTEX_SHADER, vs));
-  gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs));
+  gl.attachShader(p, v);
+  gl.attachShader(p, f);
   gl.linkProgram(p);
-  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p) ?? 'link');
   const u = new Proxy({} as Record<string, WebGLUniformLocation | null>, { get: (c, k: string) => (k in c ? c[k] : (c[k] = gl.getUniformLocation(p, k))) });
-  return { p, u };
+  return { p, u, v, f };
+}
+/**
+ * Waits for programs to finish compiling. With KHR_parallel_shader_compile the
+ * driver compiles in the background while the page keeps scrolling smoothly;
+ * without it, this simply checks the result.
+ */
+async function finishPrograms(gl: WebGL2RenderingContext, progs: ReturnType<typeof startProgram>[]) {
+  const ext = gl.getExtension('KHR_parallel_shader_compile');
+  if (ext) {
+    const done = () => progs.every((x) => gl.getProgramParameter(x.p, ext.COMPLETION_STATUS_KHR));
+    while (!done()) await new Promise((r) => requestAnimationFrame(r));
+  }
+  for (const x of progs) {
+    if (!gl.getProgramParameter(x.p, gl.LINK_STATUS)) {
+      throw new Error(gl.getShaderInfoLog(x.v) || gl.getShaderInfoLog(x.f) || gl.getProgramInfoLog(x.p) || 'link');
+    }
+  }
 }
 
 function cssColor(el: Element, name: string): Vec3 {
@@ -279,7 +296,7 @@ const lum = (c: Vec3) => c[0] * 0.3 + c[1] * 0.59 + c[2] * 0.11;
 const mix3 = (a: Vec3, b: Vec3, t: number): Vec3 => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 
 /* Mount ------------------------------------------------------------------- */
-export function mountTable(host: HTMLElement) {
+export async function mountTable(host: HTMLElement) {
   const canvas = host.querySelector<HTMLCanvasElement>('canvas')!;
   const labels = host.querySelector<HTMLElement>('[data-labels]')!;
   const ctx = canvas.getContext('webgl2', { antialias: true, alpha: true, premultipliedAlpha: true });
@@ -287,12 +304,12 @@ export function mountTable(host: HTMLElement) {
   const gl: WebGL2RenderingContext = ctx;
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  let solid: ReturnType<typeof program>, depth: ReturnType<typeof program>, ribbon: ReturnType<typeof program>, sprite: ReturnType<typeof program>;
+  const solid = startProgram(gl, SOLID_VS, SOLID_FS);
+  const depth = startProgram(gl, SOLID_VS, DEPTH_FS);
+  const ribbon = startProgram(gl, RIBBON_VS, RIBBON_FS);
+  const sprite = startProgram(gl, SPRITE_VS, SPRITE_FS);
   try {
-    solid = program(gl, SOLID_VS, SOLID_FS);
-    depth = program(gl, SOLID_VS, DEPTH_FS);
-    ribbon = program(gl, RIBBON_VS, RIBBON_FS);
-    sprite = program(gl, SPRITE_VS, SPRITE_FS);
+    await finishPrograms(gl, [solid, depth, ribbon, sprite]);
   } catch (err) {
     console.warn('Haptic table shaders did not compile:', err);
     return null;
@@ -550,7 +567,8 @@ export function mountTable(host: HTMLElement) {
   let cw = 1, ch = 1;
   const ro = new ResizeObserver(() => {
     const r = canvas.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // 1.5x is sharp with antialiasing and costs half the pixels of 2x.
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     cw = Math.max(1, r.width);
     ch = Math.max(1, r.height);
     canvas.width = Math.round(cw * dpr);
@@ -582,11 +600,15 @@ export function mountTable(host: HTMLElement) {
 
   /* Frame */
   let raf = 0, visible = false, last = performance.now();
+  // Ambient motion (the drift, the fire, the flowing routes) runs at 30 fps;
+  // dragging and step changes get every frame.
+  let wasBusy = true, shadowDirty = true;
   function kick() {
     if (!raf && visible) raf = requestAnimationFrame(frame);
   }
   function frame(now: number) {
     raf = 0;
+    if (!wasBusy && !dragging && now - last < 30) return kick();
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     const t = now / 1000;
@@ -610,6 +632,7 @@ export function mountTable(host: HTMLElement) {
       }
       gl.bindBuffer(gl.ARRAY_BUFFER, hBuf);
       gl.bufferSubData(gl.ARRAY_BUFFER, 0, heights);
+      shadowDirty = true;
       pinsMoving = moving;
       busy ||= moving;
     }
@@ -650,7 +673,9 @@ export function mountTable(host: HTMLElement) {
     const [fx, fz] = world(...fireLot);
     const fireTop: Vec3 = [fx, city[idx(...fireLot)] + 0.4, fz];
 
-    // Shadow pass
+    // Shadow pass: the light never moves, so the map only changes with the pins.
+    if (shadowDirty) {
+    shadowDirty = false;
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     gl.viewport(0, 0, S, S);
     gl.clear(gl.DEPTH_BUFFER_BIT);
@@ -664,6 +689,7 @@ export function mountTable(host: HTMLElement) {
     gl.bindVertexArray(pins.vao);
     gl.drawElementsInstanced(gl.TRIANGLES, pins.count, gl.UNSIGNED_SHORT, 0, N);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    }
 
     // Main pass
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -801,6 +827,7 @@ export function mountTable(host: HTMLElement) {
 
     // While on screen the scene keeps its slow drift; with reduced motion it
     // renders only while something changes.
+    wasBusy = busy || dragging;
     if (!reduce || busy) kick();
   }
 

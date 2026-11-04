@@ -89,8 +89,12 @@ html[data-type='wide'] {
   --dur-s: 0.45s;
   --stagger: 70ms;
 }
+/* Interface feedback (hover, press, color) is always quick, whatever the motion
+   style: a response should land within about a fifth of a second. Page
+   transitions get their own, shorter scale than entrances. */
+:root { --ui: 0.18s; --ui-ease: cubic-bezier(0.2, 0, 0, 1); --vt: calc(var(--dur) * 0.62); }
 html[data-motion='calm'] { --ease: cubic-bezier(0.16, 1, 0.3, 1); --dur: 0.95s; --dur-s: 0.5s; --stagger: 80ms; }
-html[data-motion='crisp'] { --ease: cubic-bezier(0.2, 0.8, 0.2, 1); --ease-io: cubic-bezier(0.7, 0, 0.3, 1); --dur: 0.42s; --dur-s: 0.22s; --stagger: 35ms; }
+html[data-motion='crisp'] { --ease: cubic-bezier(0.2, 0.8, 0.2, 1); --ease-io: cubic-bezier(0.7, 0, 0.3, 1); --dur: 0.42s; --dur-s: 0.22s; --stagger: 35ms; --ui: 0.12s; --vt: 0.34s; }
 html[data-motion='spring'] {
   /* A gentle spring, about 10% overshoot */
   --ease: linear(0, 0.0063, 0.0257 1.7%, 0.1068 3.8%, 0.5141 11.3%, 0.7064 15.4%, 0.8474 19.5%, 0.9504 23.9%, 1.0152 28.6%, 1.0496 33.4%, 1.0618 38%, 1.0591 42.8%, 1.0399 50.5%, 1.0057 65.3%, 0.9958 77.5%, 1);

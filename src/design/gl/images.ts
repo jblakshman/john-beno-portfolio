@@ -405,6 +405,25 @@ function kick() {
 
 const candidates = () => [...document.querySelectorAll<HTMLElement>('main .m, main .prose .fig--none > .fig-m')].filter((el) => el.querySelector('img') && !el.closest('[data-nogl]'));
 
+/* Contexts are created one per frame, so a page with many images (or a Studio
+   switch to a new layout) never stalls on several shader compiles at once. */
+const queue: HTMLElement[] = [];
+let pumping = 0;
+function enqueue(el: HTMLElement) {
+  if (insts.has(el) || queue.includes(el)) return;
+  queue.push(el);
+  if (!pumping) pumping = requestAnimationFrame(pump);
+}
+function pump() {
+  pumping = 0;
+  // Nearest to the middle of the screen first.
+  const mid = window.innerHeight / 2;
+  queue.sort((a, b) => Math.abs(a.getBoundingClientRect().top - mid) - Math.abs(b.getBoundingClientRect().top - mid));
+  const el = queue.shift();
+  if (el && el.isConnected) create(el);
+  if (queue.length) pumping = requestAnimationFrame(pump);
+}
+
 export function syncImages(replay = false) {
   readPalette();
   io?.disconnect();
@@ -412,6 +431,7 @@ export function syncImages(replay = false) {
     [...insts.keys()].forEach(destroy);
     return;
   }
+  queue.length = 0;
   if (replay) {
     [...insts.keys()].forEach(destroy);
     candidates().forEach((el) => developed.delete(el));
@@ -420,7 +440,7 @@ export function syncImages(replay = false) {
     (entries) =>
       entries.forEach((e) => {
         const el = e.target as HTMLElement;
-        if (e.isIntersecting) create(el);
+        if (e.isIntersecting) enqueue(el);
       }),
     { rootMargin: '250px 0px' },
   );

@@ -73,7 +73,7 @@ html[data-palette='ink'] .isl, html[data-palette='graphite'] .isl, html[data-pal
   padding: calc(env(safe-area-inset-top, 0px) + 22px) 0 0 max(var(--gutter), env(safe-area-inset-left, 0px)); }
 .nv--index .nv-name { font-weight: 600; color: var(--ink); }
 .nv--index ol { flex-direction: column; gap: 6px; }
-.nv--index a { color: var(--muted); display: inline-flex; gap: 10px; align-items: baseline; transition: color var(--dur-s) var(--ease); }
+.nv--index a { color: var(--muted); display: inline-flex; gap: 10px; align-items: baseline; transition: color var(--ui) var(--ui-ease); }
 .nv--index a:hover, .nv--index a[data-active] { color: var(--ink); }
 html[data-nav='index'] main, html[data-nav='index'] .site-foot { padding-left: 200px; }
 
@@ -132,10 +132,11 @@ html[data-switching][data-pt]::view-transition-new(root) { animation: none; }
 
 .hs-title { font-size: var(--t-2xl); max-width: 18ch; }
 .hs-rest { color: var(--muted); }
-.hs-chip { display: inline-block; vertical-align: -0.1em; width: 1.5em; height: 0.86em; margin: 0 0.12em 0 0.04em; border-radius: 999px; overflow: hidden; background: var(--bg-elev); transition: width var(--dur) var(--ease); }
+.hs-chip { display: inline-block; vertical-align: -0.1em; width: 1.5em; height: 0.86em; margin: 0 0.12em 0 0.04em; border-radius: 999px; overflow: hidden; background: var(--bg-elev); }
 html[data-radius='sharp'] .hs-chip { border-radius: 0; }
-.hs-chip img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; filter: grayscale(1); }
-.hs-title:hover .hs-chip { width: 2.4em; }
+.hs-chip img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; filter: grayscale(1); transition: filter var(--dur) var(--ease), transform var(--dur) var(--ease); }
+/* Hovering the headline brings the portrait to life, without moving any text. */
+.hs-title:hover .hs-chip img { filter: none; transform: scale(1.14); }
 
 .H-giant { padding-top: calc(var(--header-h) + clamp(32px, 6vw, 90px)); }
 .hg-top { display: flex; justify-content: space-between; gap: 16px; padding-bottom: 10px; }
@@ -374,7 +375,7 @@ html[data-radius='sharp'] .hs-chip { border-radius: 0; }
 .note-row { padding: 22px 0; row-gap: 8px; align-items: baseline; }
 .note-row time { grid-column: 1 / span 3; }
 .note-t { grid-column: 4 / span 6; display: grid; gap: 6px; }
-.note-t .d { font-size: var(--t-lg); line-height: 1.15; transition: color var(--dur-s) var(--ease); }
+.note-t .d { font-size: var(--t-lg); line-height: 1.15; transition: color var(--ui) var(--ui-ease); }
 .note-t .ink-2 { font-size: var(--t-sm); max-width: 60ch; }
 .note-tags { grid-column: 10 / -1; justify-self: end; text-align: right; }
 .note-row:hover .note-t .d { color: var(--accent); }

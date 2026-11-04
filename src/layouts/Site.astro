@@ -181,6 +181,7 @@ const attrs = Object.fromEntries(Object.keys(defaults).map((k) => [`data-${k}`, 
           try {
             var a = navigation.activation;
             if (a && a.navigationType === 'traverse' && a.from && a.entry && a.from.index > a.entry.index) r.dataset.dir = 'back';
+            e.viewTransition.ready.catch(function () {});
             e.viewTransition.finished.then(function () { delete r.dataset.dir; }, function () { delete r.dataset.dir; });
           } catch (err) {}
         });

@@ -48,8 +48,8 @@ html[data-case='editorial'] .prose { --trail: calc(var(--col) * 2); }
 .case-toc { position: absolute; top: 0; bottom: 0; left: var(--pad); width: calc(var(--col) * 3 - var(--gap)); }
 .toc-in { position: sticky; top: calc(var(--header-h) + 32px); display: grid; gap: 12px; font-size: var(--t-sm); }
 .case-toc ol { display: grid; gap: 4px; }
-.case-toc a { position: relative; color: var(--muted); transition: color var(--dur-s) var(--ease); }
-.case-toc a::before { content: ''; position: absolute; left: -13px; top: 0.6em; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); transform: scale(0); transition: transform var(--dur-s) var(--ease); }
+.case-toc a { position: relative; color: var(--muted); transition: color var(--ui) var(--ui-ease); }
+.case-toc a::before { content: ''; position: absolute; left: -13px; top: 0.6em; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); transform: scale(0); transition: transform var(--ui) var(--ui-ease); }
 .case-toc a:hover, .case-toc a[data-active] { color: var(--ink); }
 .case-toc a[data-active]::before { transform: none; }
 html[data-case='editorial'] .case-toc ol { gap: 10px; }
@@ -65,7 +65,7 @@ html[data-case='editorial'] .case-toc a::before { top: 0.5em; }
 .prose > ol:not(.blk) { list-style: decimal; }
 .prose li::marker { color: var(--muted); }
 .prose strong { font-weight: 600; }
-.prose a { text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; transition: text-decoration-color var(--dur-s) var(--ease); }
+.prose a { text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; transition: text-decoration-color var(--ui) var(--ui-ease); }
 .prose a:hover { text-decoration-color: currentColor; }
 .prose > blockquote { margin-block: 1.4em; padding-left: 1em; border-left: 2px solid var(--accent); color: var(--ink-2); }
 .prose code { font-family: var(--f-mono); font-size: 0.86em; padding: 0.1em 0.35em; border-radius: 4px; background: var(--bg-elev); }

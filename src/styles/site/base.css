@@ -2,7 +2,7 @@
    Base
    ------------------------------------------------------------------ */
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-padding-top: calc(var(--header-h) + 24px); }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-padding-top: calc(var(--header-h) + 24px); scrollbar-gutter: stable; }
 body {
   margin: 0;
   background: var(--bg);
@@ -61,7 +61,7 @@ p { text-wrap: pretty; }
 .pill {
   display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 18px;
   border-radius: 999px; border: 1px solid var(--line); font-size: var(--t-sm); font-weight: 500; white-space: nowrap;
-  transition: background var(--dur-s) var(--ease), border-color var(--dur-s) var(--ease), color var(--dur-s) var(--ease), transform var(--dur-s) var(--ease);
+  transition: background var(--ui) var(--ui-ease), border-color var(--ui) var(--ui-ease), color var(--ui) var(--ui-ease), transform var(--ui) var(--ui-ease);
 }
 html[data-radius='sharp'] .pill { border-radius: 0; }
 .pill:hover { border-color: var(--ink); }
@@ -108,7 +108,7 @@ html[data-imgin='unveil'] .m[data-in='on'] img, html[data-imgin='unveil'] .m[dat
   position: relative; display: inline-block;
   background-image: linear-gradient(currentColor, currentColor); background-repeat: no-repeat;
   background-size: 0% 1px; background-position: 0 100%;
-  transition: background-size var(--dur-s) var(--ease);
+  transition: background-size calc(var(--ui) * 1.6) var(--ui-ease);
 }
 .ln:hover, .ln:focus-visible, .ln[aria-current] { background-size: 100% 1px; }
 html[data-link='slide'] .ln:hover { animation: pass calc(var(--dur) * 0.9) var(--ease); }
@@ -150,7 +150,7 @@ html:is([data-reveal='lines'], [data-reveal='words']):not([data-rv-ready]) [data
 [data-rv] .ri { display: inline-block; }
 
 html[data-reveal='lines'] [data-rv] .rw { overflow: clip; vertical-align: top; padding-bottom: 0.12em; margin-bottom: -0.12em; }
-html[data-reveal='lines'] [data-rv] .ri, html[data-reveal='lines'] [data-rv] .ratom { transform: translateY(110%); transition: transform calc(var(--dur) * 1.1) var(--ease); transition-delay: calc(var(--l, 0) * var(--stagger) * 1.3); }
+html[data-reveal='lines'] [data-rv] .ri, html[data-reveal='lines'] [data-rv] .ratom { transform: translateY(110%); transition: transform calc(var(--dur) * 0.85) var(--ease); transition-delay: calc(var(--l, 0) * var(--stagger)); }
 html[data-reveal='lines'] [data-rv].in .ri, html[data-reveal='lines'] [data-rv].in .ratom { transform: none; }
 
 html[data-reveal='words'] [data-rv] .rw, html[data-reveal='words'] [data-rv] .ratom { opacity: 0; filter: blur(12px); transition: opacity var(--dur) var(--ease), filter calc(var(--dur) * 1.2) var(--ease); transition-delay: calc(var(--i, 0) * var(--stagger) * 0.55); }
@@ -215,37 +215,37 @@ html[data-palette='ink'] .daylight, html[data-palette='graphite'] .daylight, htm
 /* ------------------------------------------------------------------
    Page transitions (cross-document view transitions)
    ------------------------------------------------------------------ */
-::view-transition-group(*) { animation-duration: calc(var(--dur) * 0.95); animation-timing-function: var(--ease); }
-::view-transition-old(root), ::view-transition-new(root) { animation-duration: var(--dur); animation-timing-function: var(--ease); }
+::view-transition-group(*) { animation-duration: calc(var(--vt) * 0.95); animation-timing-function: var(--ease); }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: var(--vt); animation-timing-function: var(--ease); }
 
-html[data-pt='fade']::view-transition-old(root) { animation: vt-fade-out calc(var(--dur) * 0.55) var(--ease) both; }
-html[data-pt='fade']::view-transition-new(root) { animation: vt-fade-in calc(var(--dur) * 0.6) var(--ease) both; }
+html[data-pt='fade']::view-transition-old(root) { animation: vt-fade-out calc(var(--vt) * 0.55) var(--ease) both; }
+html[data-pt='fade']::view-transition-new(root) { animation: vt-fade-in calc(var(--vt) * 0.6) var(--ease) both; }
 
-html[data-pt='rise']::view-transition-old(root) { animation: vt-rise-out var(--dur) var(--ease) both; }
-html[data-pt='rise']::view-transition-new(root) { animation: vt-rise-in var(--dur) var(--ease) both; }
+html[data-pt='rise']::view-transition-old(root) { animation: vt-rise-out var(--vt) var(--ease) both; }
+html[data-pt='rise']::view-transition-new(root) { animation: vt-rise-in var(--vt) var(--ease) both; }
 
-html[data-pt='push']::view-transition-old(root) { animation: vt-push-out var(--dur) var(--ease) both; }
-html[data-pt='push']::view-transition-new(root) { animation: vt-push-in var(--dur) var(--ease) both; }
-html[data-pt='push'][data-dir='back']::view-transition-old(root) { animation: vt-pop-out var(--dur) var(--ease) both; z-index: 2; }
-html[data-pt='push'][data-dir='back']::view-transition-new(root) { animation: vt-pop-in var(--dur) var(--ease) both; z-index: 1; }
+html[data-pt='push']::view-transition-old(root) { animation: vt-push-out var(--vt) var(--ease) both; }
+html[data-pt='push']::view-transition-new(root) { animation: vt-push-in var(--vt) var(--ease) both; }
+html[data-pt='push'][data-dir='back']::view-transition-old(root) { animation: vt-pop-out var(--vt) var(--ease) both; z-index: 2; }
+html[data-pt='push'][data-dir='back']::view-transition-new(root) { animation: vt-pop-in var(--vt) var(--ease) both; z-index: 1; }
 
 /* Open: the new page grows out of the card that was clicked; back closes into it */
-html[data-pt='open']::view-transition-old(root) { animation: vt-recede calc(var(--dur) * 1.05) var(--ease) both; }
-html[data-pt='open']::view-transition-new(root) { animation: vt-open calc(var(--dur) * 1.05) var(--ease) both; transform-origin: var(--o-cx, 50%) var(--o-cy, 50%); }
-html[data-pt='open'][data-dir='back']::view-transition-old(root) { animation: vt-close calc(var(--dur) * 0.95) var(--ease) both; z-index: 2; transform-origin: var(--o-cx, 50%) var(--o-cy, 50%); }
-html[data-pt='open'][data-dir='back']::view-transition-new(root) { animation: vt-unrecede calc(var(--dur) * 0.95) var(--ease) both; z-index: 1; }
+html[data-pt='open']::view-transition-old(root) { animation: vt-recede calc(var(--vt) * 1.05) var(--ease) both; }
+html[data-pt='open']::view-transition-new(root) { animation: vt-open calc(var(--vt) * 1.05) var(--ease) both; transform-origin: var(--o-cx, 50%) var(--o-cy, 50%); }
+html[data-pt='open'][data-dir='back']::view-transition-old(root) { animation: vt-close calc(var(--vt) * 0.95) var(--ease) both; z-index: 2; transform-origin: var(--o-cx, 50%) var(--o-cy, 50%); }
+html[data-pt='open'][data-dir='back']::view-transition-new(root) { animation: vt-unrecede calc(var(--vt) * 0.95) var(--ease) both; z-index: 1; }
 
-html[data-pt='morph']::view-transition-old(root) { animation: vt-fade-out calc(var(--dur) * 0.45) var(--ease) both; }
-html[data-pt='morph']::view-transition-new(root) { animation: vt-rise-in-soft calc(var(--dur) * 0.8) var(--ease) calc(var(--dur) * 0.22) both; }
+html[data-pt='morph']::view-transition-old(root) { animation: vt-fade-out calc(var(--vt) * 0.45) var(--ease) both; }
+html[data-pt='morph']::view-transition-new(root) { animation: vt-rise-in-soft calc(var(--vt) * 0.8) var(--ease) calc(var(--vt) * 0.22) both; }
 html[data-pt='morph'] [data-vt] { view-transition-name: var(--vt); }
 html[data-pt='morph'] .site-nav { view-transition-name: nav; }
 html[data-pt='morph']::view-transition-group(nav) { animation: none; }
 
-html[data-pt='develop']::view-transition-old(root) { animation: vt-fade-out calc(var(--dur) * 0.5) var(--ease) both; }
-html[data-pt='develop']::view-transition-new(root) { animation: vt-develop calc(var(--dur) * 1.7) cubic-bezier(0.3, 0.6, 0.2, 1) both; }
+html[data-pt='develop']::view-transition-old(root) { animation: vt-fade-out calc(var(--vt) * 0.5) var(--ease) both; }
+html[data-pt='develop']::view-transition-new(root) { animation: vt-develop calc(var(--vt) * 1.7) cubic-bezier(0.3, 0.6, 0.2, 1) both; }
 
-html[data-pt='focus']::view-transition-old(root) { animation: vt-blur-out var(--dur) var(--ease) both; }
-html[data-pt='focus']::view-transition-new(root) { animation: vt-blur-in calc(var(--dur) * 1.1) var(--ease) both; }
+html[data-pt='focus']::view-transition-old(root) { animation: vt-blur-out var(--vt) var(--ease) both; }
+html[data-pt='focus']::view-transition-new(root) { animation: vt-blur-in calc(var(--vt) * 1.1) var(--ease) both; }
 
 @keyframes vt-fade-out { to { opacity: 0; } }
 @keyframes vt-fade-in { from { opacity: 0; } }
@@ -286,18 +286,12 @@ html.lenis, html.lenis body { height: auto; }
 }
 
 /* Image placeholders: the frame shows the image's own colors, softly blurred,
-   until it has loaded; then the image fades in over it. Without scripting,
-   images simply show as they load. */
+   until the image has loaded and covers it. */
 [data-ph][style*='--ph-c'] { background-color: var(--ph-c); isolation: isolate; }
 [data-ph][style*='--ph-c']::before { content: ''; position: absolute; inset: -24px; z-index: -1; background: var(--ph) center / cover no-repeat; filter: blur(18px) saturate(1.1);
   transition: opacity 0.6s var(--ease); pointer-events: none; }
 [data-ph]:has(img[data-l])::before { opacity: 0; }
-@media (scripting: enabled) {
-  [data-ph] img:not([data-l]) { opacity: 0; }
-  [data-ph] img[data-l] { animation: ph-in 0.5s var(--ease) both; }
-}
-@keyframes ph-in { from { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { [data-ph] img[data-l] { animation: none; } }
+/* Images are never hidden: a page transition can snapshot them at any moment. */
 
 /* ==================================================================
    Respecting the visitor's settings

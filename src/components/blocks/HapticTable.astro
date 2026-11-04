@@ -98,9 +98,11 @@ const durations = [4.5, 5.5, 7, 7];
       async ([e]) => {
         if (!e.isIntersecting) return;
         near.disconnect();
+        // Start when the browser is idle, so it never interrupts a scroll.
+        await new Promise((r) => ('requestIdleCallback' in window ? requestIdleCallback(r, { timeout: 800 }) : setTimeout(r, 1)));
         try {
           const { mountTable } = await import('../../design/gl/table');
-          api = mountTable(fig);
+          api = await mountTable(fig);
         } catch (err) {
           console.error('Haptic table could not start:', err);
           api = null;

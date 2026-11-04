@@ -78,16 +78,22 @@ tick();
 setInterval(tick, 15000);
 
 /* Fit text to its container ([data-fit]) ------------------------------- */
+/** Sizes [data-fit] text to fill its box: set all to a reference size, measure all, then write all. */
 function fitAll() {
-  document.querySelectorAll<HTMLElement>('[data-fit]').forEach((el) => {
-    const box = el.parentElement;
-    if (!box || !el.offsetParent) return;
+  const els = [...document.querySelectorAll<HTMLElement>('[data-fit]')].filter((el) => el.parentElement && el.offsetParent);
+  if (!els.length) return;
+  els.forEach((el) => {
     el.style.setProperty('--fit', '100px');
     el.style.display = 'inline-block';
-    const natural = el.getBoundingClientRect().width;
-    el.style.display = '';
+  });
+  const sizes = els.map((el) => {
+    const box = el.parentElement!;
     const cs = getComputedStyle(box);
-    const avail = box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    return { natural: el.getBoundingClientRect().width, avail: box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) };
+  });
+  els.forEach((el, i) => {
+    el.style.display = '';
+    const { natural, avail } = sizes[i];
     if (natural > 0) el.style.setProperty('--fit', `${Math.floor(((100 * avail) / natural) * 10) / 10}px`);
   });
 }
@@ -128,23 +134,38 @@ function splitWords(el: HTMLElement) {
   walk(el);
 }
 
-function assignLines(el: HTMLElement) {
-  let line = -1;
-  let lastTop = -Infinity;
-  for (const it of el.querySelectorAll<HTMLElement>('.rw, .ratom')) {
-    const top = it.offsetTop;
-    if (top > lastTop + 4) {
-      line++;
-      lastTop = top;
-    }
-    it.style.setProperty('--l', String(line));
-  }
+/**
+ * Numbers the visual lines of split text so each line can rise in turn.
+ * All positions are read first and all styles written after, so the browser
+ * lays the page out once, not once per word.
+ */
+function assignLines(els: HTMLElement[]) {
+  const groups = els.filter((el) => el.offsetParent).map((el) => [...el.querySelectorAll<HTMLElement>('.rw, .ratom')]);
+  const tops = groups.map((items) => items.map((it) => it.offsetTop));
+  groups.forEach((items, g) => {
+    let line = -1;
+    let lastTop = -Infinity;
+    items.forEach((it, i) => {
+      if (tops[g][i] > lastTop + 4) {
+        line++;
+        lastTop = tops[g][i];
+      }
+      it.style.setProperty('--l', String(line));
+    });
+  });
 }
 
+/**
+ * Splits text for the chosen entrance and reveals it as it scrolls into view.
+ * replay: play the entrance again (when the entrance style itself changes).
+ * Otherwise text that was already showing stays shown, only re-flowed, so
+ * switching typefaces or layouts in the Studio never makes headlines blink.
+ */
 function setupReveal(replay = false) {
   const mode = cfg('reveal');
   revealIO?.disconnect();
   const els = [...document.querySelectorAll<HTMLElement>('[data-rv]')];
+  const shown = new Set(replay ? [] : els.filter((el) => el.classList.contains('in')));
   for (const el of els) {
     if (!originals.has(el)) originals.set(el, el.innerHTML);
     el.classList.add('rv-reset');
@@ -152,8 +173,9 @@ function setupReveal(replay = false) {
     el.innerHTML = originals.get(el)!;
     if (mode === 'lines' || mode === 'words') splitWords(el);
   }
-  if (mode === 'lines') els.forEach((el) => el.offsetParent && assignLines(el));
+  if (mode === 'lines') assignLines(els);
   root.dataset.rvReady = '';
+  shown.forEach((el) => el.classList.add('in'));
   void document.body.offsetHeight;
   els.forEach((el) => el.classList.remove('rv-reset'));
   if (mode === 'none' || reduce) return els.forEach((el) => el.classList.add('in'));
@@ -166,7 +188,7 @@ function setupReveal(replay = false) {
       }),
     { threshold: 0.15, rootMargin: '0px 0px -6% 0px' },
   );
-  const start = () => els.forEach((el) => revealIO!.observe(el));
+  const start = () => els.forEach((el) => !shown.has(el) && revealIO!.observe(el));
   replay ? requestAnimationFrame(() => requestAnimationFrame(start)) : start();
 }
 
@@ -244,6 +266,11 @@ function setupScroll() {
 /* Scroll-driven layouts -------------------------------------------------- */
 let ticking = false;
 let indexHover = false;
+/** Sets or clears a data attribute only when it changes, so style is not recalculated needlessly. */
+function flag(el: HTMLElement, name: string, on: boolean) {
+  if (on !== name in el.dataset) on ? (el.dataset[name] = '') : delete el.dataset[name];
+}
+
 function onScroll() {
   ticking = false;
   const vh = window.innerHeight;
@@ -278,23 +305,24 @@ function onScroll() {
       const n = sec.querySelectorAll('.sl-t').length;
       const p = clamp(-r.top / (r.height - vh), 0, 0.9999);
       const idx = Math.floor(p * n);
-      sec.querySelectorAll<HTMLElement>('[data-i]').forEach((el) => {
-        const i = Number(el.dataset.i);
-        i === idx ? (el.dataset.on = '') : delete el.dataset.on;
-        i < idx ? (el.dataset.past = '') : delete el.dataset.past;
-        if (el.matches('.sl-t')) el.querySelector('.pill')?.setAttribute('tabindex', i === idx ? '0' : '-1');
-      });
+      if (sec.dataset.at !== String(idx)) {
+        sec.dataset.at = String(idx);
+        sec.querySelectorAll<HTMLElement>('[data-i]').forEach((el) => {
+          const i = Number(el.dataset.i);
+          flag(el, 'on', i === idx);
+          flag(el, 'past', i < idx);
+          if (el.matches('.sl-t')) el.querySelector('.pill')?.setAttribute('tabindex', i === idx ? '0' : '-1');
+        });
+      }
     }
   }
 
   if (layout === 'stack') {
     const cards = [...document.querySelectorAll<HTMLElement>('.st-card')];
+    const rects = cards.map((c) => c.getBoundingClientRect());
     cards.forEach((c, i) => {
-      const next = cards[i + 1];
-      if (!next) return c.style.setProperty('--cov', '0');
-      const a = c.getBoundingClientRect();
-      const b = next.getBoundingClientRect();
-      c.style.setProperty('--cov', clamp(1 - (b.top - a.top) / a.height).toFixed(3));
+      const cov = rects[i + 1] ? clamp(1 - (rects[i + 1].top - rects[i].top) / rects[i].height).toFixed(3) : '0';
+      if (c.style.getPropertyValue('--cov') !== cov) c.style.setProperty('--cov', cov);
     });
   }
 
@@ -319,7 +347,7 @@ function onScroll() {
       const t = document.getElementById(a.dataset.toc!);
       if (t && t.getBoundingClientRect().top < vh * 0.35) id = a.dataset.toc;
     }
-    toc.forEach((a) => (a.dataset.toc === id ? (a.dataset.active = '') : delete a.dataset.active));
+    toc.forEach((a) => flag(a, 'active', a.dataset.toc === id));
   }
 }
 const requestScroll = () => {
@@ -335,9 +363,12 @@ window.addEventListener('resize', () => {
 });
 
 /* Index layout */
+let indexActive = -1;
 function setIndexActive(i: number) {
-  document.querySelectorAll<HTMLElement>('.ix-list .p').forEach((el) => (Number(el.dataset.ix) === i ? (el.dataset.active = '') : delete el.dataset.active));
-  document.querySelectorAll<HTMLElement>('.ix-pic').forEach((el, k) => (k === i ? (el.dataset.active = '') : delete el.dataset.active));
+  if (i === indexActive) return;
+  indexActive = i;
+  document.querySelectorAll<HTMLElement>('.ix-list .p').forEach((el) => flag(el, 'active', Number(el.dataset.ix) === i));
+  document.querySelectorAll<HTMLElement>('.ix-pic').forEach((el, k) => flag(el, 'active', k === i));
   const cap = document.querySelector('[data-ix-caption]');
   const item = document.querySelector<HTMLElement>(`.ix-list .p[data-ix="${i}"]`);
   if (cap && item) cap.textContent = `${item.querySelector('.ix-title')?.textContent ?? ''} · ${item.querySelector('.lbl:last-child')?.textContent ?? ''}`;
@@ -389,23 +420,58 @@ if (qFloat && fine) {
 /* Navigation: island on touch, full-screen menu ------------------------- */
 const island = document.querySelector<HTMLElement>('[data-island]');
 island?.addEventListener('click', (e) => {
-  if (!fine && !(e.target as HTMLElement).closest('.isl-links a')) {
+  if (!fine && !(e.target as HTMLElement).closest('.isl-links a, .isl-links button')) {
     e.preventDefault();
     island.toggleAttribute('data-open');
   }
 });
+// Tapping anywhere else, or scrolling, folds the island back up.
+document.addEventListener('pointerdown', (e) => {
+  if (island?.hasAttribute('data-open') && !island.contains(e.target as Node)) island.removeAttribute('data-open');
+}, { passive: true });
+window.addEventListener('scroll', () => island?.hasAttribute('data-open') && island.removeAttribute('data-open'), { passive: true });
 const menu = document.getElementById('site-menu');
 const openBtns = document.querySelectorAll<HTMLButtonElement>('[data-menu-open]');
-const setMenu = (open: boolean) => {
-  if (!menu) return;
+let menuOpener: HTMLElement | null = null;
+/**
+ * The full-screen menu behaves like a dialog: the page behind it neither
+ * scrolls nor takes focus, focus starts on the first link and Tab stays
+ * inside, and closing returns focus to the button that opened it.
+ */
+const setMenu = (open: boolean, restoreFocus = true) => {
+  if (!menu || menu.hidden === !open) return;
   menu.hidden = !open;
   openBtns.forEach((b) => b.setAttribute('aria-expanded', String(open)));
-  open ? lenis?.stop() : lenis?.start();
+  document.querySelectorAll<HTMLElement>('main, .site-foot, .site-nav').forEach((el) => (el.inert = open));
+  root.style.overflow = open ? 'hidden' : '';
+  if (open) {
+    lenis?.stop();
+    menuOpener = document.activeElement as HTMLElement | null;
+    menu.querySelector<HTMLElement>('a, button')?.focus({ preventScroll: true });
+  } else {
+    lenis?.start();
+    if (restoreFocus) menuOpener?.focus({ preventScroll: true });
+  }
 };
 openBtns.forEach((b) => b.addEventListener('click', () => setMenu(true)));
 document.querySelector('[data-menu-close]')?.addEventListener('click', () => setMenu(false));
-document.querySelectorAll('[data-menu-link]').forEach((a) => a.addEventListener('click', () => setMenu(false)));
-document.addEventListener('keydown', (e) => e.key === 'Escape' && setMenu(false));
+document.querySelectorAll('[data-menu-link]').forEach((a) => a.addEventListener('click', () => setMenu(false, false)));
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') setMenu(false);
+  if (e.key === 'Tab' && menu && !menu.hidden) {
+    const items = [...menu.querySelectorAll<HTMLElement>('a, button')];
+    const first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+});
+// A page restored from the back/forward cache never comes back with the menu open.
+window.addEventListener('pageshow', (e) => e.persisted && setMenu(false, false));
 
 /* Copy email ------------------------------------------------------------ */
 document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((b) =>
@@ -486,7 +552,9 @@ function apply(config: Config, changed?: string, preview = false) {
   if (all || ['type', 'hero', 'layout', 'reveal', 'nav'].includes(changed!)) {
     requestAnimationFrame(() => {
       fitAll();
-      setupReveal(true);
+      // Replay the entrance only when it is what changed (or a whole new look),
+      // and never for a hover preview.
+      setupReveal(!preview && (all || changed === 'reveal'));
       requestScroll();
     });
   }
@@ -633,15 +701,20 @@ document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((b) 
       syncDaylight();
       syncThemeColor();
     };
-    const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } };
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void>; ready: Promise<void>; updateCallbackDone: Promise<void> } };
     if (!doc.startViewTransition || reduce) return swap();
     root.dataset.switching = '';
     const end = () => delete root.dataset.switching;
-    doc.startViewTransition(swap).finished.then(end, end);
+    const vt = doc.startViewTransition(swap);
+    // A transition can be cut short (the window resizes, another one starts);
+    // the swap still happens, so these are not errors.
+    vt.ready.catch(() => {});
+    vt.updateCallbackDone.catch(() => {});
+    vt.finished.then(end, end);
   }),
 );
 document.fonts?.ready.then(() => {
   fitAll();
-  if (cfg('reveal') === 'lines') document.querySelectorAll<HTMLElement>('[data-rv]').forEach((el) => el.offsetParent && assignLines(el));
+  if (cfg('reveal') === 'lines') assignLines([...document.querySelectorAll<HTMLElement>('[data-rv]')]);
   requestScroll();
 });
