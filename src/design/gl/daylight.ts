@@ -85,6 +85,9 @@ let canvas: HTMLCanvasElement | null = null;
 let u: Record<string, WebGLUniformLocation | null> = {};
 let raf = 0;
 let last = 0;
+/** Resolution governor: steps down when the device cannot keep up. */
+let quality = 1;
+let slow = 0;
 let hourOverride: number | null = null;
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -147,7 +150,7 @@ function setup() {
 
 function resize() {
   if (!canvas || !gl) return;
-  const scale = window.innerWidth < 760 ? 0.35 : 0.5;
+  const scale = (window.innerWidth < 760 ? 0.35 : 0.5) * quality;
   canvas.width = Math.max(2, Math.round(window.innerWidth * scale));
   canvas.height = Math.max(2, Math.round(window.innerHeight * scale));
   gl.viewport(0, 0, canvas.width, canvas.height);
@@ -157,6 +160,15 @@ function frame(now: number) {
   raf = 0;
   if (!gl || !canvas || root.dataset.ambient !== 'daylight') return;
   if (now - last > 33 || reduce) {
+    // Frames arriving much later than the 30 fps we ask for mean the GPU is busy:
+    // after a couple of seconds of that, render the light at a lower resolution.
+    const gap = now - last;
+    if (last && gap < 500) slow = gap > 52 ? slow + 1 : Math.max(0, slow - 1);
+    if (slow > 60 && quality > 0.5) {
+      quality = Math.max(0.5, quality * 0.75);
+      slow = 0;
+      resize();
+    }
     last = now;
     const s = sun();
     gl.uniform2f(u.uRes, window.innerWidth, window.innerHeight);
@@ -196,4 +208,7 @@ export function setDaylightHour(h: number | null) {
   if (reduce && gl) requestAnimationFrame(frame);
 }
 
-document.addEventListener('visibilitychange', () => !document.hidden && syncDaylight());
+document.addEventListener('visibilitychange', () => {
+  last = 0;
+  if (!document.hidden) syncDaylight();
+});

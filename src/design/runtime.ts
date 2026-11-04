@@ -11,6 +11,22 @@ const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const cfg = (k: string) => root.dataset[k] ?? defaults[k];
 
+/**
+ * Lite: when the visitor asks to save data, or the device is clearly modest,
+ * the site keeps its look but drops what costs the most: shaders, smooth
+ * scrolling and autoplaying video.
+ */
+const nav = navigator as Navigator & { connection?: { saveData?: boolean }; deviceMemory?: number };
+const lite = !!nav.connection?.saveData || (nav.deviceMemory ?? 8) <= 2 || (navigator.hardwareConcurrency ?? 8) <= 2;
+if (lite) root.dataset.lite = '';
+
+/** The browser's address-bar color follows the page, in every palette and in dark mode. */
+function syncThemeColor() {
+  const bg = getComputedStyle(document.body).backgroundColor;
+  const metas = document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]');
+  metas.forEach((m, i) => (i === 0 ? (m.removeAttribute('media'), (m.content = bg)) : m.remove()));
+}
+
 /* Heavier pieces load only when the chosen look uses them ---------------- */
 const once = <T,>(load: () => Promise<T>) => {
   let p: Promise<T> | null = null;
@@ -24,7 +40,7 @@ const lazy = {
   scrub: once(() => import('./scrub')),
   lenis: once(() => import('lenis')),
 };
-const wantsImages = () => cfg('imgin') === 'develop' || cfg('imgmotion') === 'flex' || cfg('hover') === 'loupe' || cfg('hover') === 'develop' || cfg('images') === 'mono';
+const wantsImages = () => !lite && (cfg('imgin') === 'develop' || cfg('imgmotion') === 'flex' || cfg('hover') === 'loupe' || cfg('hover') === 'develop' || cfg('images') === 'mono');
 let imagesLoaded = false;
 function syncImages(replay = false) {
   if (!wantsImages() && !imagesLoaded) return;
@@ -35,7 +51,7 @@ function syncImages(replay = false) {
 }
 let daylightLoaded = false;
 function syncDaylight() {
-  if (cfg('ambient') !== 'daylight' && !daylightLoaded) return;
+  if ((cfg('ambient') !== 'daylight' || lite) && !daylightLoaded) return;
   lazy.daylight().then((m) => {
     daylightLoaded = true;
     m.syncDaylight();
@@ -206,7 +222,7 @@ document.addEventListener('pointerout', (e) => {
 let lenis: Lenis | null = null;
 let lenisToken = 0;
 function setupScroll() {
-  const want = cfg('scroll') === 'smooth' && !reduce;
+  const want = cfg('scroll') === 'smooth' && !reduce && !lite;
   const token = ++lenisToken;
   if (!want) {
     lenis?.destroy();
@@ -463,6 +479,7 @@ function apply(config: Config, changed?: string, preview = false) {
   }
   if (all || changed === 'imgin' || changed === 'layout') setupUnveil(true);
   if (all || changed === 'ambient' || changed === 'palette') syncDaylight();
+  if (all || changed === 'palette' || changed === 'dark') requestAnimationFrame(syncThemeColor);
   if (all || changed === 'scroll' || changed === 'motion') {
     lenis?.destroy();
     lenis = null;
@@ -541,6 +558,7 @@ fitAll();
 // A page the browser prerendered (on hover, before the click) waits until it
 // is actually shown, so its entrance plays for the visitor, not in the dark.
 const show = () => {
+  syncThemeColor();
   setupReveal();
   setupUnveil();
   syncImages();
@@ -555,7 +573,8 @@ else show();
 
 /* Videos that play while visible ---------------------------------------- */
 const autoVideos = document.querySelectorAll<HTMLVideoElement>('video[data-autoplay]');
-if (autoVideos.length && !reduce) {
+if (autoVideos.length && (reduce || lite)) autoVideos.forEach((v) => (v.controls = true));
+if (autoVideos.length && !reduce && !lite) {
   const vio = new IntersectionObserver(
     (entries) => entries.forEach((e) => {
       const v = e.target as HTMLVideoElement;
@@ -589,6 +608,7 @@ document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((b) 
       } catch {}
       syncImages();
       syncDaylight();
+      syncThemeColor();
     };
     const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } };
     if (!doc.startViewTransition || reduce) return swap();

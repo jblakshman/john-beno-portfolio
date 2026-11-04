@@ -298,3 +298,69 @@ html.lenis, html.lenis body { height: auto; }
 }
 @keyframes ph-in { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { [data-ph] img[data-l] { animation: none; } }
+
+/* ==================================================================
+   Respecting the visitor's settings
+   ================================================================== */
+
+/* Reduced transparency: frosted surfaces become solid. */
+@media (prefers-reduced-transparency: reduce) {
+  .nv--bar, .nv--index, .isl, .isl[data-refract], .zoom-bg, .cmp-tag, .emb-play, .ptr {
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  }
+  .nv--bar, .nv--index, .isl { background: var(--bg) !important; }
+  .zoom-bg { background: var(--bg); }
+  .cmp-tag { background: #111; }
+}
+
+/* More contrast: firmer lines, quieter text gets darker, no texture over text. */
+@media (prefers-contrast: more) {
+  html[data-palette] { --line: color-mix(in oklab, var(--ink) 40%, var(--bg)); --muted: var(--ink-2); }
+  .grain, .daylight { display: none !important; }
+}
+
+/* Forced colors (Windows high contrast): system colors, no decoration. */
+@media (forced-colors: active) {
+  .grain, .daylight, canvas.fx, .ptr, .cur--label { display: none !important; }
+  html[data-cursor], html[data-cursor] * { cursor: revert !important; }
+  .pill, .crn-btn, .status { border: 1px solid ButtonText; }
+  .theme i { forced-color-adjust: none; box-shadow: inset 0 0 0 1.25px ButtonText; background: linear-gradient(90deg, ButtonText 50%, transparent 0); }
+  [data-ph]::before { display: none; }
+  [data-ph] img, [data-rv] .ri, [data-rv] .rw { opacity: 1 !important; transform: none !important; }
+}
+
+/* Lite (save data or a modest device): no texture, no ambient light. */
+html[data-lite] .grain, html[data-lite] .daylight { display: none; }
+
+/* ==================================================================
+   Print: case studies print (and save as PDF) as clean documents
+   ================================================================== */
+@media print {
+  @page { margin: 16mm 14mm; }
+  html[data-palette] { --bg: #fff !important; --bg-elev: #f3f3f3 !important; --ink: #000 !important; --ink-2: #333 !important; --muted: #555 !important; --line: #ccc !important; --accent: #000 !important; color-scheme: light; }
+  html, body { background: #fff !important; }
+  .site-nav, .menu, .skip, .ptr, .cur--label, .grain, .daylight, canvas.fx, .case-toc, .theme, .fig-zoom, .zoom,
+  .scrub-bar, .cmp-line, .cmp-range, .emb-play, .f-word, .f-mail button, .nv-avail, .next { display: none !important; }
+  .wrap { padding-inline: 0 !important; }
+  .C-classic, .C-editorial, .note-head, .doc, .notes, .colo { padding-top: 0 !important; }
+  .ci-hero { height: 55vh !important; }
+  .ci-over { height: 55vh !important; }
+  .case-body .prose { --pad: 0px; --lead: 0px; --trail: 0px; }
+  .case-body { margin-top: 18pt; }
+  .prose { font-size: 10.5pt; line-height: 1.5; }
+  .prose h2 { margin-top: 24pt; }
+  .blk, figure, .glance-l > div, .stats > div, .dec, pre, .quote, .note, .steps li, .cmeta > div { break-inside: avoid; }
+  h1, h2, h3 { break-after: avoid; }
+  .prose a[href^='http']::after { content: ' (' attr(href) ')'; font-size: 0.8em; color: #555; word-break: break-all; }
+  /* Everything that waits for scrolling to appear is simply there. */
+  [data-rv], [data-rv] *, [data-in], [data-in] *, [data-ph] img { opacity: 1 !important; transform: none !important; visibility: visible !important;
+    clip-path: none !important; -webkit-mask: none !important; mask: none !important; filter: none !important; animation: none !important; }
+  [data-ph]::before { display: none; }
+  .scrub { height: auto !important; }
+  .scrub-sticky { position: static !important; height: auto !important; padding: 0 !important; display: block !important; }
+  .scrub-caps { display: grid; gap: 6pt; margin-top: 8pt; }
+  .scrub-caps li { position: static !important; opacity: 1 !important; transform: none !important; filter: none !important; }
+  .site-foot { margin-top: 24pt; padding-top: 12pt; }
+  .gal--strip .gal-in { flex-wrap: wrap; overflow: visible; padding-inline: 0; }
+  .gal--strip .gal-in > * { width: 30% !important; }
+}
