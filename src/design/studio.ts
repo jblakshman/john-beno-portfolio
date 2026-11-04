@@ -44,6 +44,7 @@ function syncPanel() {
     const v = document.querySelector(`[data-value="${g.id}"]`);
     if (v) v.textContent = g.options.find((o) => o.id === config[g.id])?.label ?? '';
   }
+  document.querySelectorAll<HTMLElement>('.look').forEach((chip, i) => (looks[i] && same(looks[i].config, config) ? (chip.dataset.on = '') : delete chip.dataset.on));
   document.querySelectorAll<HTMLElement>('[data-preset]').forEach((b) => {
     const p = presets.find((x) => x.id === b.dataset.preset)!;
     const match = Object.entries(p.config).every(([k, v]) => config[k] === v);
@@ -168,19 +169,22 @@ document.querySelector('[data-copy-setup]')?.addEventListener('click', async () 
   }
 });
 
-// Device sizes, scaled to fit the stage
-const viewport = document.querySelector<HTMLElement>('[data-viewport]')!;
-const device = document.querySelector<HTMLElement>('[data-device-frame]')!;
+// Device sizes, scaled to fit the stage (and to half of it when comparing)
+const sizes: Record<string, [number, number]> = { desktop: [1440, 900], tablet: [834, 1112], phone: [390, 844] };
 function fitDevice() {
-  const kind = studio.dataset.device;
-  if (kind === 'desktop' || window.innerWidth <= 860) {
-    device.style.transform = '';
-    return;
-  }
-  const w = kind === 'phone' ? 390 : 834;
-  const h = kind === 'phone' ? 844 : 1112;
-  const s = Math.min(1, (viewport.clientWidth - 48) / w, (viewport.clientHeight - 48) / h);
-  device.style.transform = `scale(${s})`;
+  const kind = studio.dataset.device ?? 'desktop';
+  const comparing = studio.hasAttribute('data-compare');
+  document.querySelectorAll<HTMLElement>('[data-device-frame]').forEach((d) => {
+    const pane = d.parentElement!;
+    if ((kind === 'desktop' && !comparing) || window.innerWidth <= 860) {
+      d.style.transform = '';
+      return;
+    }
+    const [w, h] = sizes[kind];
+    const s = Math.min(1, (pane.clientWidth - 40) / w, (pane.clientHeight - (comparing ? 76 : 48)) / h);
+    d.style.transform = `scale(${s})`;
+    pane.style.setProperty('--dev-h', `${h * s}px`);
+  });
 }
 document.querySelectorAll<HTMLButtonElement>('[data-device-btn]').forEach((b) =>
   b.addEventListener('click', () => {
@@ -219,19 +223,156 @@ document.querySelector('[data-hour-now]')?.addEventListener('click', () => {
   frame.contentWindow?.postMessage({ type: 'lab:hour', hour: null }, location.origin);
 });
 
-// Messages from the preview
+// Messages from the previews
+const frameB = document.querySelector<HTMLIFrameElement>('[data-frame-b]')!;
+const paneB = document.querySelector<HTMLElement>('[data-pane-b]')!;
+const pathOf = (p: unknown) => String(p || '').replace(/\.html$/, '').replace(/\/$/, '') || '/lab/p';
+let pathA = '/lab/p';
+let pathB = '';
 window.addEventListener('message', (e) => {
-  if (e.origin !== location.origin || e.data?.type !== 'lab:page') return;
-  // Keep the page picker in step with where the preview is.
-  const path = String(e.data.path || '').replace(/\.html$/, '').replace(/\/$/, '');
-  if (pagePick && [...pagePick.options].some((o) => o.value === path)) pagePick.value = path;
-  document.querySelector<HTMLAnchorElement>('[data-open-full]')?.setAttribute('href', path || '/lab/p');
+  if (e.origin !== location.origin || !e.data) return;
+  const fromA = e.source === frame.contentWindow;
+  const fromB = e.source === frameB.contentWindow;
+  if (e.data.type === 'lab:page') {
+    const path = pathOf(e.data.path);
+    if (fromA) {
+      pathA = path;
+      if (pagePick && [...pagePick.options].some((o) => o.value === path)) pagePick.value = path;
+      document.querySelector<HTMLAnchorElement>('[data-open-full]')?.setAttribute('href', path);
+      if (comparing() && pathB && pathB !== path) frameB.contentWindow?.location.assign(path);
+    }
+    if (fromB) {
+      pathB = path;
+      if (comparing() && pathA !== path) frame.contentWindow?.location.assign(path);
+    }
+  }
+  // While comparing, scrolling one preview scrolls the other to the same point.
+  if (e.data.type === 'lab:scroll' && comparing()) {
+    const other = fromA ? frameB : fromB ? frame : null;
+    other?.contentWindow?.postMessage({ type: 'lab:scrollto', r: e.data.r }, location.origin);
+  }
 });
 const pagePick = document.querySelector<HTMLSelectElement>('[data-page]');
 pagePick?.addEventListener('change', () => {
   frame.contentWindow?.location.assign(pagePick.value);
   document.querySelector<HTMLAnchorElement>('[data-open-full]')?.setAttribute('href', pagePick.value);
 });
+
+/* Saved looks ------------------------------------------------------------ */
+type Look = { name: string; config: Config };
+const LOOKS_KEY = 'jb-lab-looks';
+let looks: Look[] = [];
+try {
+  looks = (JSON.parse(localStorage.getItem(LOOKS_KEY) || '[]') as Look[]).map((l) => ({ name: String(l.name), config: sanitize(l.config) }));
+} catch {}
+const storeLooks = () => {
+  try {
+    localStorage.setItem(LOOKS_KEY, JSON.stringify(looks));
+  } catch {}
+};
+const labelOf = (g: string, c: Config) => groups.find((x) => x.id === g)?.options.find((o) => o.id === c[g])?.label ?? '';
+const same = (a: Config, b: Config) => groups.every((g) => a[g.id] === b[g.id]);
+const list = document.querySelector<HTMLElement>('[data-looks-list]')!;
+function renderLooks() {
+  list.replaceChildren(
+    ...looks.map((l, i) => {
+      const chip = document.createElement('span');
+      chip.className = 'look';
+      if (same(l.config, config)) chip.dataset.on = '';
+      const apply = document.createElement('button');
+      apply.type = 'button';
+      apply.textContent = l.name;
+      apply.title = 'Apply. Double-click to rename.';
+      apply.addEventListener('click', () => {
+        config = { ...l.config };
+        save();
+        syncPanel();
+        send();
+        show(`${l.name} applied`);
+      });
+      apply.addEventListener('dblclick', () => {
+        const name = prompt('Name this look', l.name)?.trim();
+        if (name) {
+          l.name = name;
+          storeLooks();
+          renderLooks();
+        }
+      });
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.textContent = '×';
+      del.setAttribute('aria-label', `Delete ${l.name}`);
+      del.addEventListener('click', () => {
+        looks.splice(i, 1);
+        storeLooks();
+        renderLooks();
+      });
+      chip.append(apply, del);
+      return chip;
+    }),
+  );
+  fillB();
+}
+document.querySelector('[data-save-look]')?.addEventListener('click', () => {
+  if (looks.some((l) => same(l.config, config))) return show('This look is already saved');
+  const name = [labelOf('layout', config), labelOf('palette', config), labelOf('type', config)].join(' · ');
+  looks.push({ name, config: { ...config } });
+  storeLooks();
+  renderLooks();
+  show('Look saved');
+});
+
+/* Compare two looks side by side ----------------------------------------- */
+const pickB = document.querySelector<HTMLSelectElement>('[data-b-look]')!;
+const compareBtn = document.querySelector<HTMLButtonElement>('[data-compare-btn]');
+const comparing = () => studio.hasAttribute('data-compare');
+function fillB() {
+  const keep = pickB.value || 'live';
+  const opt = (v: string, t: string) => Object.assign(document.createElement('option'), { value: v, textContent: t });
+  const group = (label: string, items: HTMLOptionElement[]) => {
+    const g = document.createElement('optgroup');
+    g.label = label;
+    g.append(...items);
+    return g;
+  };
+  pickB.replaceChildren(
+    opt('live', 'Live site'),
+    group('Presets', presets.map((p) => opt(`preset:${p.id}`, p.label))),
+    ...(looks.length ? [group('Your looks', looks.map((l, i) => opt(`look:${i}`, l.name)))] : []),
+  );
+  pickB.value = [...pickB.options].some((o) => o.value === keep) ? keep : 'live';
+}
+function configB(): Config {
+  const v = pickB.value;
+  if (v.startsWith('preset:')) return sanitize({ ...defaults, ...presets.find((p) => `preset:${p.id}` === v)?.config });
+  if (v.startsWith('look:')) return { ...(looks[Number(v.slice(5))]?.config ?? defaults) };
+  return { ...defaults };
+}
+function sendB() {
+  // pin: the preview keeps this look on every page it navigates to.
+  frameB.contentWindow?.postMessage({ type: 'lab:config', config: configB(), preview: true, pin: true }, location.origin);
+}
+pickB.addEventListener('change', sendB);
+frameB.addEventListener('load', () => {
+  sendB();
+  frameB.contentWindow?.postMessage({ type: 'lab:sync', on: true }, location.origin);
+});
+frame.addEventListener('load', () => frame.contentWindow?.postMessage({ type: 'lab:sync', on: comparing() }, location.origin));
+compareBtn?.addEventListener('click', () => {
+  const on = !comparing();
+  studio.toggleAttribute('data-compare', on);
+  compareBtn.setAttribute('aria-pressed', String(on));
+  paneB.hidden = !on;
+  frame.contentWindow?.postMessage({ type: 'lab:sync', on }, location.origin);
+  if (on) {
+    // The look rides along in the address on first load, so B never shows A's look first.
+    if (pathB !== pathA || !frameB.src) frameB.src = `${pathA}#c=${encodeURIComponent(encode(configB()))}`;
+    else frameB.contentWindow?.postMessage({ type: 'lab:sync', on: true }, location.origin);
+  }
+  requestAnimationFrame(fitDevice);
+});
+renderLooks();
+
 frame.addEventListener('load', () => send());
 
 save();

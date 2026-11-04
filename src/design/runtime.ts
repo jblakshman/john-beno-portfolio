@@ -483,8 +483,19 @@ function apply(config: Config, changed?: string, preview = false) {
 
 if (isPreview) window.addEventListener('message', (e) => {
   if (e.origin !== location.origin || !e.data || typeof e.data !== 'object') return;
-  if (e.data.type === 'lab:config') apply(e.data.config, e.data.changed, !!e.data.preview);
+  if (e.data.type === 'lab:config') {
+    // A pinned look (the Studio's compare pane) survives navigation inside this frame.
+    if (e.data.pin) window.name = `jbcfg:${JSON.stringify(e.data.config)}`;
+    apply(e.data.config, e.data.changed, !!e.data.preview);
+  }
   if (e.data.type === 'lab:hour') lazy.daylight().then((m) => m.setDaylightHour(e.data.hour));
+  if (e.data.type === 'lab:sync') syncScroll = !!e.data.on;
+  if (e.data.type === 'lab:scrollto') {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    followUntil = performance.now() + 180;
+    const y = Math.round(e.data.r * max);
+    lenis ? lenis.scrollTo(y, { immediate: true }) : window.scrollTo(0, y);
+  }
   if (e.data.type === 'lab:try-transition') {
     if (document.querySelector('.case')) {
       if (history.length > 1) history.back();
@@ -504,6 +515,25 @@ if (isPreview) window.addEventListener('message', (e) => {
   }
 });
 if (isPreview && window.parent !== window) window.parent.postMessage({ type: 'lab:page', path: location.pathname, title: document.title }, location.origin);
+
+/* Studio compare: report scroll so the other preview can follow ---------- */
+let syncScroll = false;
+let followUntil = 0;
+let scrollRaf = 0;
+if (isPreview && window.parent !== window) {
+  addEventListener(
+    'scroll',
+    () => {
+      if (!syncScroll || scrollRaf || performance.now() < followUntil) return;
+      scrollRaf = requestAnimationFrame(() => {
+        scrollRaf = 0;
+        const max = document.documentElement.scrollHeight - innerHeight;
+        window.parent.postMessage({ type: 'lab:scroll', r: max > 0 ? scrollY / max : 0 }, location.origin);
+      });
+    },
+    { passive: true },
+  );
+}
 
 /* Start ---------------------------------------------------------------- */
 setupScroll();
