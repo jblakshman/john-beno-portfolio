@@ -75,4 +75,25 @@ const work = defineCollection({
     }),
 });
 
-export const collections = { work };
+/**
+ * Notes: short pieces of writing. Process notes, things you learned,
+ * small studies. Shown when sections.notes is on in site.config.ts.
+ */
+const notes = defineCollection({
+  loader: glob({ pattern: '**/*.mdx', base: './src/content/notes' }),
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      /** One or two sentences for the list, search results and the feed. */
+      description: z.string(),
+      date: z.coerce.date(),
+      updated: z.coerce.date().optional(),
+      tags: z.array(z.string()).default([]),
+      /** Optional image for link previews. */
+      image: image().optional(),
+      imageAlt: z.string().optional(),
+      draft: z.boolean().default(false),
+    }),
+});
+
+export const collections = { work, notes };

@@ -75,7 +75,8 @@ html[data-case='editorial'] .case-toc a::before { top: 0.5em; }
 .glance-l dd { font-size: var(--t-md); line-height: 1.45; text-wrap: pretty; }
 
 /* Status, links, credits */
-.status { display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; padding: 2px 9px 2px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink-2); }
+.status { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; padding: 2px 9px 2px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--ink-2); vertical-align: 0.3em;
+  font-family: var(--f-mono); font-size: var(--t-2xs); font-weight: 400; font-style: normal; letter-spacing: var(--mono-track); text-transform: var(--mono-case); font-variation-settings: var(--mono-vars); line-height: 1.5; }
 .status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
 .status--draft::before { background: #e0a100; }
 .links { display: grid; gap: 4px; justify-items: start; }

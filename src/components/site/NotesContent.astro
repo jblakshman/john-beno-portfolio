@@ -1,0 +1,39 @@
+---
+/** The list of notes, newest first. */
+import { paths } from '../../design/paths';
+import { getNotes, isoDate, noteDate } from '../../lib/notes';
+
+const P = paths(Astro.url);
+const notes = await getNotes({ drafts: P.preview });
+---
+
+<section class="notes wrap" data-section="Notes" aria-labelledby="notes-title">
+  <header class="notes-head grid">
+    <p class="lbl">Notes</p>
+    <div class="notes-intro">
+      <h1 class="d notes-title" id="notes-title" data-rv>Notes</h1>
+      <p class="ink-2">Process, small studies and things I learned along the way.</p>
+    </div>
+  </header>
+  {
+    notes.length ? (
+      <ol class="notes-list" role="list">
+        {notes.map((n) => (
+          <li>
+            <a class="note-row grid" href={P.note(n.id)}>
+              <time class="lbl tab" datetime={isoDate(n.data.date)}>{noteDate(n.data.date)}</time>
+              <span class="note-t">
+                <span class="d">{n.data.title}{n.data.draft && <span class="status status--draft">Draft</span>}</span>
+                <span class="ink-2">{n.data.description}</span>
+              </span>
+              <span class="lbl note-tags">{n.data.tags.join(', ')}</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    ) : (
+      <p class="ink-2 notes-empty">Nothing here yet.</p>
+    )
+  }
+  {!P.preview && <p class="lbl notes-feed"><a class="ln" href="/rss.xml">RSS feed</a></p>}
+</section>

@@ -1,17 +1,28 @@
 ---
 /**
- * Optional top-level sections. A page is only built when its switch in
+ * Optional top-level pages. Each is only built when its switch in
  * site.config.ts (sections) is on; until then it lives in the Studio preview.
  */
 import Site from '../layouts/Site.astro';
 import AppsContent from '../components/site/AppsContent.astro';
+import ColophonContent from '../components/site/ColophonContent.astro';
 import { site } from '../site.config';
 
 export function getStaticPaths() {
-  return site.sections.apps ? [{ params: { section: 'apps' } }] : [];
+  const on = (['apps', 'colophon'] as const).filter((k) => site.sections[k]);
+  return on.map((section) => ({ params: { section } }));
 }
+const { section } = Astro.params;
 ---
 
-<Site title="Apps" description={`Native Apple apps by ${site.name}, rebuilt for the browser so you can use them instead of watching a video.`}>
-  <AppsContent />
-</Site>
+{
+  section === 'apps' ? (
+    <Site title="Apps" description={`Native Apple apps by ${site.name}, rebuilt for the browser so you can use them instead of watching a video.`}>
+      <AppsContent />
+    </Site>
+  ) : (
+    <Site title="Colophon" description={`How ${site.name}’s website is designed and built.`}>
+      <ColophonContent />
+    </Site>
+  )
+}

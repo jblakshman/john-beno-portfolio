@@ -1,0 +1,33 @@
+---
+/** One note. Uses the same text column and blocks as case studies. */
+import { render } from 'astro:content';
+import { paths } from '../../design/paths';
+import { isoDate, noteDate, type Note } from '../../lib/notes';
+
+interface Props {
+  note: Note;
+}
+const { note } = Astro.props;
+const P = paths(Astro.url);
+const d = note.data;
+const { Content } = await render(note);
+---
+
+<article class="note" data-section={d.title}>
+  <header class="note-head wrap">
+    <nav class="lbl crumbs" aria-label="Breadcrumb">
+      <a class="ln" href={P.notes}>Notes</a> / <time datetime={isoDate(d.date)}>{noteDate(d.date)}</time>
+      {d.draft && <span class="status status--draft">Draft</span>}
+    </nav>
+    <h1 class="d note-title" data-rv>{d.title}</h1>
+    <p class="note-sum ink-2">{d.description}</p>
+    {d.updated && <p class="lbl">Updated <time datetime={isoDate(d.updated)}>{noteDate(d.updated)}</time></p>}
+  </header>
+  <div class="case-body">
+    <div class="prose"><Content /></div>
+  </div>
+  <footer class="note-foot wrap grid">
+    <p class="lbl">{d.tags.join(', ')}</p>
+    <a class="pill" href={P.notes}>All notes</a>
+  </footer>
+</article>

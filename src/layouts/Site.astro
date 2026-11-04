@@ -80,6 +80,7 @@ const attrs = Object.fromEntries(Object.keys(defaults).map((k) => [`data-${k}`, 
           <meta property="og:locale" content="en_US" />
           <meta name="twitter:card" content="summary_large_image" />
           <link rel="sitemap" href="/sitemap-index.xml" />
+          {site.sections.notes && <link rel="alternate" type="application/rss+xml" title={`${site.name} · Notes`} href="/rss.xml" />}
           {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
         </>
       )

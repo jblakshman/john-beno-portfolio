@@ -34,6 +34,7 @@ export const site = {
   sections: {
     apps: false,
     notes: false,
+    colophon: false,
   },
   /**
    * Profiles that belong to you. Every link here is shown in the footer and

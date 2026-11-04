@@ -12,6 +12,8 @@ export function paths(url: URL) {
     about: `${base}/about`,
     apps: `${base}/apps`,
     notes: `${base}/notes`,
+    colophon: `${base}/colophon`,
     project: (id: string) => `${base}/work/${id}`,
+    note: (id: string) => `${base}/notes/${id}`,
   };
 }

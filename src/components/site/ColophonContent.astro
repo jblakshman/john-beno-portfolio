@@ -1,0 +1,48 @@
+---
+/**
+ * How the site is made. The typography and motion lines follow the look
+ * that is switched on (design.config.ts, or the Studio while previewing).
+ */
+import { site } from '../../site.config';
+
+const type: Record<string, string> = {
+  mona: 'Headlines and text are set in Mona Sans by GitHub, labels in Martian Mono by Evil Martians.',
+  native: 'Headlines and text are set in the system typeface of your device: San Francisco on Apple devices.',
+  gallery: 'Headlines are set in Instrument Serif and text in Instrument Sans, both by Instrument; labels in Geist Mono by Vercel.',
+  horology: 'Headlines are set in Cormorant Garamond by Christian Thalmann, text in Manrope by Mikhail Sharanda, labels in Geist Mono by Vercel.',
+  editorial: 'Headlines are set in Newsreader by Production Type, text in Geist and labels in Geist Mono, both by Vercel.',
+  wide: 'Headlines and text are set in Archivo by Omnibus-Type, labels in Martian Mono by Evil Martians.',
+};
+const rows = [
+  { k: 'Design and code', v: `${site.name}, ${site.location.city}.` },
+  { k: 'Built with', v: 'Astro, plain CSS and a little TypeScript. Every page is a static file, generated when the site is published.' },
+  { k: 'Hosting', v: 'Cloudflare. Each change pushed to GitHub is built and online within a few minutes.' },
+  { k: 'Images', v: 'Converted to AVIF and WebP at several sizes when the site is built, so every screen loads only what it needs.' },
+  { k: 'Privacy', v: 'No cookies, no advertising, no tracking across sites. Fonts are served from this domain.' },
+  { k: 'Accessibility', v: 'Text meets WCAG AA contrast in every color scheme. Motion calms down when your device asks for reduced motion, and everything works with a keyboard.' },
+];
+---
+
+<section class="colo wrap" data-section="Colophon" aria-labelledby="colo-title">
+  <header class="colo-head grid">
+    <p class="lbl">Colophon</p>
+    <div>
+      <h1 class="d colo-title" id="colo-title" data-rv>How this site is made</h1>
+    </div>
+  </header>
+  <dl class="colo-list">
+    <div class="grid">
+      <dt class="lbl">Typography</dt>
+      <dd>{Object.entries(type).map(([id, text]) => <span class="tv" data-tv={id}>{text}</span>)}</dd>
+    </div>
+    <div class="grid colo-motion">
+      <dt class="lbl">Motion</dt>
+      <dd>
+        Page transitions use the browser’s View Transitions API.
+        <span class="mv mv--gl">The image effects and the light are small WebGL shaders written for this site.</span>
+        <span class="mv mv--smooth">Scrolling is smoothed with Lenis.</span>
+      </dd>
+    </div>
+    {rows.map((r) => <div class="grid"><dt class="lbl">{r.k}</dt><dd>{r.v}</dd></div>)}
+  </dl>
+</section>

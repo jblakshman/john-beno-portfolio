@@ -2,12 +2,16 @@
 import '../../styles/site/tokens.css';
 import { groups, presets, defaults, sections } from '../../design/options';
 import { getProjects } from '../../lib/work';
+import { getNotes } from '../../lib/notes';
 
 const pages = [
   { path: '/lab/p', label: 'Home' },
   { path: '/lab/p/about', label: 'About' },
   { path: '/lab/p/apps', label: 'Apps' },
+  { path: '/lab/p/notes', label: 'Notes' },
+  { path: '/lab/p/colophon', label: 'Colophon' },
   ...(await getProjects({ drafts: true })).map((p) => ({ path: `/lab/p/work/${p.id}`, label: p.data.draft ? `${p.data.title} (draft)` : p.data.title })),
+  ...(await getNotes({ drafts: true })).map((n) => ({ path: `/lab/p/notes/${n.id}`, label: `Note: ${n.data.title}${n.data.draft ? ' (draft)' : ''}` })),
 ];
 
 const swatches: Record<string, [string, string, string]> = {

@@ -122,3 +122,29 @@ export function caseGraph(project: CollectionEntry<'work'>) {
     ]),
   );
 }
+
+export function noteGraph(note: CollectionEntry<'notes'>) {
+  const d = note.data;
+  const url = `${site.url}/notes/${note.id}`;
+  return graph(
+    {
+      '@type': 'BlogPosting',
+      '@id': `${url}#note`,
+      headline: d.title,
+      description: d.description,
+      url,
+      datePublished: d.date.toISOString(),
+      ...(d.updated ? { dateModified: d.updated.toISOString() } : {}),
+      keywords: d.tags.join(', '),
+      inLanguage: 'en',
+      author: { '@id': personId },
+      isPartOf: { '@id': websiteId },
+    },
+    person(),
+    breadcrumbs([
+      { name: site.name, url: `${site.url}/` },
+      { name: 'Notes', url: `${site.url}/notes` },
+      { name: d.title, url },
+    ]),
+  );
+}

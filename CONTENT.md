@@ -146,6 +146,29 @@ wrong length, or a cover that is too small. Then check:
 - [ ] It reads well on a phone (Studio → Phone)
 - [ ] Light and dark mode both look right (the toggle in the navigation)
 
+## Notes
+
+Notes are short pieces of writing: a technique you figured out, a detail that did
+not fit a case study, a small study. A few hundred words each. They live in
+`src/content/notes/`; copy `note-template.mdx` to start one. The file name becomes
+the address (`/notes/file-name`). Notes can use every case study block.
+
+The section, its RSS feed (`/rss.xml`) and the link in the navigation appear on
+the live site once you switch on `notes` in `src/site.config.ts`. Until then they
+are visible in the Studio only. Switch it on when you have two or three notes;
+an empty section reads worse than none.
+
+## Switching sections on
+
+`sections` in `src/site.config.ts` controls what the live site shows. The Studio
+preview always shows everything, so you can design a section before it goes live.
+
+| Switch | What it adds |
+| --- | --- |
+| `apps` | The Apps page, its link in the navigation and footer, and the teaser on the home page |
+| `notes` | Notes, the RSS feed and the link in the navigation |
+| `colophon` | A short page on how the site is made, linked in the footer. It describes the typefaces and motion you chose automatically. |
+
 ## Other things you can change
 
 | What | Where |

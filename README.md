@@ -38,6 +38,7 @@ npm run new -- "Project name"
 | Case studies (text) | `src/content/work/*.mdx` |
 | Case study images | `src/assets/work/<project>/` |
 | Videos | `public/media/` |
+| Notes (writing) | `src/content/notes/*.mdx` |
 | Case study blocks | `src/components/blocks/` |
 | Page content (home, about, case study, apps) | `src/components/site/` |
 | Pages and routes | `src/pages/` |

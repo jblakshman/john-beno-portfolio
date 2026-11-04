@@ -1,0 +1,12 @@
+---
+import Site from '../../../../layouts/Site.astro';
+import NoteContent from '../../../../components/site/NoteContent.astro';
+import { getNotes, type Note } from '../../../../lib/notes';
+
+export async function getStaticPaths() {
+  return (await getNotes({ drafts: true })).map((note) => ({ params: { slug: note.id }, props: { note } }));
+}
+const { note } = Astro.props as { note: Note };
+---
+
+<Site title={note.data.title}><NoteContent note={note} /></Site>

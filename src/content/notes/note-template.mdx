@@ -1,0 +1,25 @@
+---
+# A draft: it only shows in the Studio preview. Copy this file to start a note.
+title: How to write a note
+description: A short note template. Notes are for process, small studies and things you learned, in a few hundred words.
+date: 2026-01-15
+tags: [Process]
+draft: true
+---
+
+Notes are the small things: a technique you figured out, a detail from a project that did not fit the case study, a reaction to something you read or built. A few hundred words is plenty. They show how you think between projects, and they give search engines more reasons to connect your name with the work you do.
+
+## A good note
+
+- Has one point, stated in the first two sentences
+- Shows something: a sketch, a screen recording, a snippet of code
+- Ends when the point is made
+
+## Publishing
+
+Copy this file, rename it (the file name becomes the address: `/notes/file-name`), change the date and set `draft: false`. Notes appear on the live site once `notes` is switched on in `src/site.config.ts`. The newest ones also go out in the RSS feed at `/rss.xml`.
+
+```ts
+// Code works the same as in case studies.
+const greet = (name: string) => `Hello, ${name}`;
+```

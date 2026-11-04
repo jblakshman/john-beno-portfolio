@@ -1,0 +1,18 @@
+---
+import Site from '../../layouts/Site.astro';
+import NoteContent from '../../components/site/NoteContent.astro';
+import { getNotes, type Note } from '../../lib/notes';
+import { noteGraph } from '../../lib/schema';
+import { site } from '../../site.config';
+
+export async function getStaticPaths() {
+  if (!site.sections.notes) return [];
+  return (await getNotes()).map((note) => ({ params: { slug: note.id }, props: { note } }));
+}
+const { note } = Astro.props as { note: Note };
+const d = note.data;
+---
+
+<Site title={d.title} description={d.description} image={d.image} imageAlt={d.imageAlt} ogType="article" jsonLd={noteGraph(note)}>
+  <NoteContent note={note} />
+</Site>
