@@ -142,6 +142,10 @@ html[data-hover='loupe'] .p .m, html[data-hover='develop'] .p .m { cursor: none;
    Text entrance. JS wraps words of [data-rv] in .rw > .ri, sets --l and --i
    and adds .in when visible. Without JS, text simply shows.
    ------------------------------------------------------------------ */
+/* Until the runtime has split the text, keep it hidden so it never shows twice.
+   If scripts fail, it appears anyway after two seconds. */
+html:is([data-reveal='lines'], [data-reveal='words']):not([data-rv-ready]) [data-rv] { visibility: hidden; animation: rv-guard 0s 2s forwards; }
+@keyframes rv-guard { to { visibility: visible; } }
 [data-rv] .rw { display: inline-block; white-space: nowrap; }
 [data-rv] .ri { display: inline-block; }
 

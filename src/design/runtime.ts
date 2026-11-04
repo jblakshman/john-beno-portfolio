@@ -137,6 +137,7 @@ function setupReveal(replay = false) {
     if (mode === 'lines' || mode === 'words') splitWords(el);
   }
   if (mode === 'lines') els.forEach((el) => el.offsetParent && assignLines(el));
+  root.dataset.rvReady = '';
   void document.body.offsetHeight;
   els.forEach((el) => el.classList.remove('rv-reset'));
   if (mode === 'none' || reduce) return els.forEach((el) => el.classList.add('in'));

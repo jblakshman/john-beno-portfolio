@@ -23,21 +23,21 @@
   --bg-elev: #efefec;
   --ink: #121211;
   --ink-2: #55554f;
-  --muted: #8b8a84;
+  --muted: #6e6d68;
   --line: #e2e2de;
   --accent: #3434f5;
   --on-accent: #fff;
   --scrim: rgb(0 0 0 / 0.45);
   color-scheme: light;
 }
-html[data-palette='paper'] { --bg: #fafaf8; --bg-elev: #efefec; --ink: #121211; --ink-2: #55554f; --muted: #8b8a84; --line: #e2e2de; --accent: #3434f5; --on-accent: #fff; }
-html[data-palette='ink'] { --bg: #0c0c0b; --bg-elev: #171716; --ink: #f2f1ed; --ink-2: #b4b3ad; --muted: #7d7c76; --line: #262624; --accent: #a4a4ff; --on-accent: #0c0c0b; color-scheme: dark; }
-html[data-palette='bone'] { --bg: #eeebe4; --bg-elev: #e3dfd6; --ink: #1d1b16; --ink-2: #57524a; --muted: #8d877c; --line: #d6d1c6; --accent: #56643a; --on-accent: #f4f1ea; }
-html[data-palette='studio'] { --bg: #f5f5f7; --bg-elev: #e8e8ed; --ink: #1d1d1f; --ink-2: #515154; --muted: #86868b; --line: #d9d9de; --accent: #0a66d8; --on-accent: #fff; }
-html[data-palette='graphite'] { --bg: #000; --bg-elev: #1c1c1e; --ink: #f5f5f7; --ink-2: #aeaeb2; --muted: #8e8e93; --line: #2c2c2e; --accent: #0a84ff; --on-accent: #fff; color-scheme: dark; }
-html[data-palette='midnight'] { --bg: #0b1020; --bg-elev: #141b31; --ink: #ece9e1; --ink-2: #a9adbd; --muted: #6f7590; --line: #222a44; --accent: #cdb07a; --on-accent: #0b1020; color-scheme: dark; }
-html[data-palette='velvet'] { --bg: #ebe5de; --bg-elev: #dfd7cf; --ink: #2a292e; --ink-2: #5d5960; --muted: #8f878d; --line: #d3cac2; --accent: #8a6b79; --on-accent: #f6f2ee; }
-html[data-palette='sage'] { --bg: #e3e8e0; --bg-elev: #d6ddd2; --ink: #17201a; --ink-2: #4b574e; --muted: #7d8a80; --line: #c8d0c3; --accent: #2f5a3d; --on-accent: #eef2ea; }
+html[data-palette='paper'] { --bg: #fafaf8; --bg-elev: #efefec; --ink: #121211; --ink-2: #55554f; --muted: #6e6d68; --line: #e2e2de; --accent: #3434f5; --on-accent: #fff; }
+html[data-palette='ink'] { --bg: #0c0c0b; --bg-elev: #171716; --ink: #f2f1ed; --ink-2: #b4b3ad; --muted: #81807a; --line: #262624; --accent: #a4a4ff; --on-accent: #0c0c0b; color-scheme: dark; }
+html[data-palette='bone'] { --bg: #eeebe4; --bg-elev: #e3dfd6; --ink: #1d1b16; --ink-2: #57524a; --muted: #676259; --line: #d6d1c6; --accent: #56643a; --on-accent: #f4f1ea; }
+html[data-palette='studio'] { --bg: #f5f5f7; --bg-elev: #e8e8ed; --ink: #1d1d1f; --ink-2: #515154; --muted: #68686c; --line: #d9d9de; --accent: #0a66d8; --on-accent: #fff; }
+html[data-palette='graphite'] { --bg: #000; --bg-elev: #1c1c1e; --ink: #f5f5f7; --ink-2: #aeaeb2; --muted: #8e8e93; --line: #2c2c2e; --accent: #0975e3; --on-accent: #fff; color-scheme: dark; }
+html[data-palette='midnight'] { --bg: #0b1020; --bg-elev: #141b31; --ink: #ece9e1; --ink-2: #a9adbd; --muted: #7e839a; --line: #222a44; --accent: #cdb07a; --on-accent: #0b1020; color-scheme: dark; }
+html[data-palette='velvet'] { --bg: #ebe5de; --bg-elev: #dfd7cf; --ink: #2a292e; --ink-2: #5d5960; --muted: #625d62; --line: #d3cac2; --accent: #846774; --on-accent: #f6f2ee; }
+html[data-palette='sage'] { --bg: #e3e8e0; --bg-elev: #d6ddd2; --ink: #17201a; --ink-2: #4b574e; --muted: #57635a; --line: #c8d0c3; --accent: #2f5a3d; --on-accent: #eef2ea; }
 
 /* ------------------------------------------------------------------
    Typography pairings
