@@ -1,18 +1,18 @@
 ---
-import Base from '../layouts/Base.astro';
+import Site from '../layouts/Site.astro';
 ---
 
-<Base title="Page not found" description="This page doesn’t exist." noindex>
+<Site title="Page not found" description="This page doesn’t exist." noindex>
   <section class="nf wrap">
-    <p class="label">404</p>
-    <h1>This page wandered off.</h1>
-    <p class="muted">It may have moved, or the link has a typo.</p>
-    <p class="actions"><a class="pill pill--solid" href="/">Go to the homepage</a></p>
+    <p class="lbl">404</p>
+    <h1 class="d" data-rv>This page wandered off.</h1>
+    <p class="ink-2">It may have moved, or the link has a typo.</p>
+    <p class="nf-actions"><a class="pill pill--solid" href="/">Go to the homepage</a> <a class="pill" href="/#work">See the work</a></p>
   </section>
-</Base>
+</Site>
 
 <style>
-  .nf { min-height: 80svh; display: grid; align-content: end; gap: 14px; padding-bottom: 48px; }
-  h1 { font-size: var(--t-2xl); line-height: 0.95; letter-spacing: -0.045em; max-width: 12ch; }
-  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .nf { min-height: 88svh; display: grid; align-content: end; gap: 16px; padding-bottom: max(48px, env(safe-area-inset-bottom, 0px)); }
+  h1 { font-size: var(--t-display); line-height: 0.9; max-width: 11ch; }
+  .nf-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
 </style>

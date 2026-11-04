@@ -1,0 +1,40 @@
+---
+import { getCollection } from 'astro:content';
+import Hero from './Hero.astro';
+import Work from './Work.astro';
+import { paths } from '../../design/paths';
+import { site } from '../../site.config';
+
+const p = paths(Astro.url);
+const showApps = p.preview || site.sections.apps;
+const projects = (await getCollection('work', ({ data }) => !data.draft)).sort((a, b) => a.data.order - b.data.order);
+---
+
+
+
+  <div data-section="Introduction"><Hero /></div>
+  <div data-section="Work"><Work projects={projects} /></div>
+
+  {showApps && (<section class="apps-t wrap" data-section="Apps" aria-labelledby="apps-title">
+    <a class="apps-card" href={p.apps} data-cur="Open">
+      <div class="ac-text">
+        <p class="lbl">Apps · Playable</p>
+        <h2 class="d" id="apps-title" data-rv>Don’t watch the app. Use it.</h2>
+        <p>My native Apple apps, rebuilt for the browser so you can click, type and try them yourself instead of watching a video.</p>
+        <span class="pill pill--solid">See how it works <span aria-hidden="true">→</span></span>
+      </div>
+      <div class="ac-mac" aria-hidden="true">
+        <div class="acm-bar"><i></i><i></i><i></i></div>
+        <div class="acm-body"><span class="acm-side"></span><span class="acm-main"><b></b><b></b><b></b></span></div>
+      </div>
+    </a>
+  </section>)}
+
+  <section class="about-t wrap grid" data-section="About" aria-labelledby="about-title">
+    <h2 class="lbl lbl--ink" id="about-title">About</h2>
+    <div class="at-body">
+      <p class="at-lead" data-rv>I care about clarity, emotion and the small details that bring a sense of balance and purpose to a design. Alongside design I make photographs, videos and music.</p>
+      <a class="pill" href={p.about}>More about me <span aria-hidden="true">→</span></a>
+    </div>
+  </section>
+

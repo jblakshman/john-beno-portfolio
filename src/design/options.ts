@@ -94,6 +94,18 @@ export const groups: Group[] = [
     ],
   },
   {
+    id: 'dark',
+    section: 'Type and color',
+    label: 'Dark mode',
+    hint: 'Used when a visitor’s device is set to dark. The moon in the menu switches by hand.',
+    options: [
+      { id: 'ink', label: 'Ink', note: 'Near-black with soft white.' },
+      { id: 'graphite', label: 'Graphite', note: 'iOS dark mode greys.' },
+      { id: 'midnight', label: 'Midnight', note: 'Deep navy with champagne.' },
+      { id: 'none', label: 'Always light', note: 'No dark mode; the chosen color is always used.' },
+    ],
+  },
+  {
     id: 'images',
     section: 'Type and color',
     label: 'Images',
@@ -240,26 +252,10 @@ export const groups: Group[] = [
 
 export type Config = Record<string, string>;
 
-export const defaults: Config = {
-  layout: 'rows',
-  hero: 'statement',
-  case: 'classic',
-  nav: 'bar',
-  type: 'mona',
-  palette: 'paper',
-  images: 'color',
-  radius: 'soft',
-  motion: 'calm',
-  scroll: 'native',
-  pt: 'rise',
-  reveal: 'lines',
-  imgin: 'none',
-  imgmotion: 'still',
-  hover: 'zoom',
-  cursor: 'label',
-  link: 'grow',
-  ambient: 'none',
-};
+import { design } from '../design.config';
+
+/** The Studio starts from the live site's look. */
+export const defaults: Config = { ...design };
 
 export const presets: { id: string; label: string; note: string; config: Partial<Config> }[] = [
   {
@@ -298,7 +294,7 @@ export const presets: { id: string; label: string; note: string; config: Partial
     note: 'Almost only text. Lets the work speak.',
     config: { layout: 'quiet', hero: 'minimal', case: 'classic', nav: 'bar', type: 'native', palette: 'studio', images: 'color', radius: 'round', motion: 'crisp', scroll: 'native', pt: 'fade', reveal: 'none', imgin: 'none', imgmotion: 'still', hover: 'zoom', cursor: 'native', link: 'grow', ambient: 'none' },
   },
-  { id: 'current', label: 'Current site', note: 'What is live today.', config: { ...defaults } },
+  { id: 'current', label: 'Live site', note: 'What is live today (src/design.config.ts).', config: { ...defaults } },
 ];
 
 export const STORAGE_KEY = 'jb-lab-config-v2';

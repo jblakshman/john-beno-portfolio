@@ -1,36 +1,6 @@
 ---
-import { getCollection } from 'astro:content';
-import LabPreview from '../../../layouts/LabPreview.astro';
-import LabHero from '../../../components/lab/LabHero.astro';
-import LabWork from '../../../components/lab/LabWork.astro';
-
-const projects = (await getCollection('work', ({ data }) => !data.draft)).sort((a, b) => a.data.order - b.data.order);
+import Site from '../../../layouts/Site.astro';
+import HomeContent from '../../../components/site/HomeContent.astro';
 ---
 
-<LabPreview title="Home">
-  <div data-section="Introduction"><LabHero /></div>
-  <div data-section="Work"><LabWork projects={projects} /></div>
-
-  <section class="apps-t wrap" data-section="Apps" aria-labelledby="apps-title">
-    <a class="apps-card" href="/lab/p/apps" data-cur="Open">
-      <div class="ac-text">
-        <p class="lbl">Apps · Playable</p>
-        <h2 class="d" id="apps-title" data-rv>Don’t watch the app. Use it.</h2>
-        <p>My native Apple apps, rebuilt for the browser so you can click, type and try them yourself instead of watching a video.</p>
-        <span class="pill pill--solid">See how it works <span aria-hidden="true">→</span></span>
-      </div>
-      <div class="ac-mac" aria-hidden="true">
-        <div class="acm-bar"><i></i><i></i><i></i></div>
-        <div class="acm-body"><span class="acm-side"></span><span class="acm-main"><b></b><b></b><b></b></span></div>
-      </div>
-    </a>
-  </section>
-
-  <section class="about-t wrap grid" data-section="About" aria-labelledby="about-title">
-    <h2 class="lbl lbl--ink" id="about-title">About</h2>
-    <div class="at-body">
-      <p class="at-lead" data-rv>I care about clarity, emotion and the small details that bring a sense of balance and purpose to a design. Alongside design I make photographs, videos and music.</p>
-      <a class="pill" href="/lab/p/about">More about me <span aria-hidden="true">→</span></a>
-    </div>
-  </section>
-</LabPreview>
+<Site title="Home"><HomeContent /></Site>

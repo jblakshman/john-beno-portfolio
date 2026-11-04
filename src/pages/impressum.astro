@@ -1,5 +1,5 @@
 ---
-import Base from '../layouts/Base.astro';
+import Site from '../layouts/Site.astro';
 import { site } from '../site.config';
 
 const address = site.legal.address as readonly string[];
@@ -8,11 +8,11 @@ if (!address.length) {
 }
 ---
 
-<Base title="Impressum" description={`Legal notice (Impressum) for ${site.url.replace('https://', '')}.`} noindex>
-  <article class="legal wrap">
-    <p class="label">Legal notice</p>
-    <h1>Impressum</h1>
-    <p class="muted">Information according to § 5 DDG (Digitale-Dienste-Gesetz)</p>
+<Site title="Impressum" description={`Legal notice (Impressum) for ${site.url.replace('https://', '')}.`} noindex>
+  <article class="doc wrap">
+    <p class="lbl">Legal notice</p>
+    <h1 class="d">Impressum</h1>
+    <p class="lbl">Information according to § 5 DDG (Digitale-Dienste-Gesetz)</p>
 
     <h2>Responsible for this website</h2>
     <p>
@@ -22,7 +22,7 @@ if (!address.length) {
 
     <h2>Contact</h2>
     <p>
-      Email: <a class="link link--under" href={`mailto:${site.email}`}>{site.email}</a>
+      Email: <a class="ln" href={`mailto:${site.email}`}>{site.email}</a>
       {site.phone && <><br />Phone: {site.phone}</>}
     </p>
 
@@ -43,33 +43,5 @@ if (!address.length) {
       those companies.
     </p>
   </article>
-</Base>
+</Site>
 
-<style>
-  .legal {
-    padding-top: calc(var(--header-h) + clamp(48px, 8vw, 120px));
-    max-width: calc(62ch + 2 * var(--gutter));
-    display: grid;
-    gap: 14px;
-    font-size: var(--t-md);
-  }
-  h1 {
-    font-size: var(--t-2xl);
-    letter-spacing: -0.045em;
-    line-height: 0.95;
-    margin-bottom: 4px;
-  }
-  h2 {
-    margin-top: 28px;
-    font-size: var(--t-md);
-    font-weight: 600;
-  }
-  .todo {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 6px;
-    background: #ffe7a3;
-    color: #3a2a00;
-    font-size: var(--t-sm);
-  }
-</style>

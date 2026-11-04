@@ -1,0 +1,102 @@
+---
+import MacWindow from '../blocks/MacWindow.astro';
+import IPhone from '../blocks/IPhone.astro';
+import '../../styles/site/kit.css';
+const items = [
+  { t: 'Morning notes', s: 'Dictated · 2 min', k: 'Today' },
+  { t: 'Team meeting', s: 'Dictated · 14 min', k: 'Today' },
+  { t: 'Ideas for the table model', s: 'Typed · 3 min', k: 'Yesterday' },
+  { t: 'Reading list', s: 'Typed · 1 min', k: 'Yesterday' },
+  { t: 'Feedback round 2', s: 'Dictated · 6 min', k: 'Monday' },
+  { t: 'Grocery run', s: 'Dictated · 40 s', k: 'Monday' },
+];
+---
+
+
+  <section class="apps wrap" data-section="Apps">
+    <p class="lbl">Apps · Playable</p>
+    <h1 class="d apps-title" data-rv>Don’t watch the app. Use it.</h1>
+    <p class="apps-intro">Each app gets a page where its real interface runs right here: click, type and drag instead of watching a video. This is the frame and the set of controls they are built with. The content below is a sample.</p>
+  </section>
+
+  <section class="apps-demo wrap" data-section="Mac">
+    <div class="demo-head"><p class="lbl lbl--ink">macOS window</p><p class="lbl">Try the traffic lights, the sidebar and the controls</p></div>
+    <MacWindow title="Sample">
+      <nav slot="sidebar" class="k-side" data-sidebar aria-label="Sample sections">
+        <p class="k-side-h">Library</p>
+        <button type="button" class="k-side-i" aria-current="true"><span class="k-ico">◎</span>All notes</button>
+        <button type="button" class="k-side-i"><span class="k-ico">◷</span>Recent</button>
+        <button type="button" class="k-side-i"><span class="k-ico">✦</span>Pinned</button>
+        <p class="k-side-h">Settings</p>
+        <button type="button" class="k-side-i"><span class="k-ico">⌘</span>Shortcuts</button>
+        <span class="k-side-pill" aria-hidden="true"></span>
+      </nav>
+      <div slot="toolbar" class="k-seg" data-seg role="radiogroup" aria-label="View">
+        <button type="button" role="radio" aria-checked="true">List</button>
+        <button type="button" role="radio" aria-checked="false">Cards</button>
+        <span class="k-seg-thumb" aria-hidden="true"></span>
+      </div>
+      <div class="k-pane" data-view="list">
+        <h2 class="k-title">All notes</h2>
+        <div class="k-controls">
+          <label class="k-switch"><input type="checkbox" role="switch" checked /><span aria-hidden="true"></span>Show details</label>
+          <label class="k-range">Size <input type="range" min="0.8" max="1.3" step="0.01" value="1" data-size /></label>
+        </div>
+        <ul class="k-list" role="list" data-list>
+          {items.map((i) => <li><button type="button" class="k-row"><span class="k-row-t">{i.t}</span><span class="k-row-s">{i.s}</span><span class="k-row-k">{i.k}</span></button></li>)}
+        </ul>
+      </div>
+    </MacWindow>
+  </section>
+
+  <section class="apps-demo apps-demo--ios wrap" data-section="iPhone">
+    <div class="demo-head"><p class="lbl lbl--ink">iPhone</p><p class="lbl">Scroll the list, then open the sheet and drag it</p></div>
+    <div class="ios-row">
+      <IPhone label="Sample">
+        <div class="io" data-ios>
+          <header class="io-nav" data-ios-nav><span class="io-nav-t">Notes</span></header>
+          <div class="io-scroll" data-ios-scroll>
+            <h2 class="io-large">Notes</h2>
+            <div class="io-search">Search</div>
+            <ul class="io-list" role="list">
+              {[...items, ...items].map((i) => <li><span class="io-t">{i.t}</span><span class="io-s">{i.k} · {i.s}</span></li>)}
+            </ul>
+          </div>
+          <button type="button" class="io-fab" data-sheet-open aria-label="New note">+</button>
+          <div class="io-sheet" data-sheet hidden>
+            <div class="io-grab" aria-hidden="true"></div>
+            <p class="io-sheet-t">New note</p>
+            <p class="io-sheet-s">Drag me up, down, or flick to dismiss.</p>
+            <div class="io-sheet-btns"><button type="button" class="io-btn" data-sheet-close>Cancel</button><button type="button" class="io-btn io-btn--p" data-sheet-close>Save</button></div>
+          </div>
+        </div>
+      </IPhone>
+      <div class="ios-notes">
+        <p class="lbl">Built in</p>
+        <ul role="list">
+          <li>Large title that collapses into the bar as you scroll</li>
+          <li>Sheet with two resting heights and flick-to-dismiss</li>
+          <li>Springs tuned to feel like UIKit</li>
+          <li>System font, so it is San Francisco on Apple devices</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+
+<script>
+  import '../../design/kit.ts';
+</script>
+
+<style>
+  .apps { padding-top: calc(var(--header-h) + clamp(48px, 8vw, 120px)); display: grid; gap: 18px; }
+  .apps-title { font-size: var(--t-display); line-height: 0.9; max-width: 12ch; }
+  .apps-intro { font-size: var(--t-lg); line-height: 1.35; max-width: 44ch; color: var(--ink-2); }
+  .apps-demo { margin-top: clamp(64px, 9vw, 128px); display: grid; gap: 16px; }
+  .demo-head { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+  .ios-row { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: clamp(24px, 5vw, 80px); align-items: center; }
+  .ios-notes { display: grid; gap: 14px; }
+  .ios-notes ul { display: grid; gap: 10px; font-size: var(--t-md); }
+  .ios-notes li { padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  @media (max-width: 760px) { .ios-row { grid-template-columns: 1fr; } }
+</style>

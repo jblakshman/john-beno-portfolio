@@ -1,0 +1,163 @@
+---
+/**
+ * One layout for the live site and the Design Studio preview.
+ * Live site: the look comes from src/design.config.ts and is rendered on the
+ * server. Preview (/lab/p): the look comes from the Studio and can change live.
+ */
+import '../styles/site/tokens.css';
+import '../styles/site/base.css';
+import '../styles/site/layout.css';
+import '../styles/site/case.css';
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import monaLatin from '@fontsource-variable/mona-sans/files/mona-sans-latin-standard-normal.woff2?url';
+import Nav from '../components/site/Nav.astro';
+import Footer from '../components/site/Footer.astro';
+import { defaults, STORAGE_KEY } from '../design/options';
+import { design } from '../design.config';
+import { paths } from '../design/paths';
+import { site } from '../site.config';
+
+interface Props {
+  /** Page name. Leave empty on the home page. */
+  title?: string;
+  description?: string;
+  image?: ImageMetadata;
+  imageAlt?: string;
+  /** Pre-rendered social card (absolute path under /og/). */
+  ogPath?: string;
+  ogType?: 'website' | 'article' | 'profile';
+  jsonLd?: object;
+  noindex?: boolean;
+  footer?: boolean;
+  /** Per-project accent color for case studies. */
+  accent?: string;
+}
+
+const { title, description = site.description, image, imageAlt, ogPath, ogType = 'website', jsonLd, noindex = false, footer = true, accent } = Astro.props;
+const { preview } = paths(Astro.url);
+
+const fullTitle = title ? `${title} · ${site.name}` : `${site.name} – ${site.role} in ${site.location.city}`;
+const cleanPath = Astro.url.pathname.replace(/(index)?\.html$/, '').replace(/\/$/, '') || '/';
+const canonical = new URL(cleanPath, site.url).href;
+
+let ogImage = new URL(ogPath ?? '/og/default.png', site.url).href;
+let ogAlt = imageAlt ?? `${site.name}, ${site.role}`;
+if (image && !ogPath) {
+  const og = await getImage({ src: image, width: 1200, height: 630, fit: 'cover', format: 'jpg', quality: 82 });
+  ogImage = new URL(og.src, site.url).href;
+}
+const darkPalettes = ['ink', 'graphite', 'midnight'];
+const attrs = Object.fromEntries(Object.keys(defaults).map((k) => [`data-${k}`, design[k]]));
+---
+
+<!doctype html>
+<html lang="en" {...(preview ? {} : attrs)} data-preview={preview ? '' : undefined} style={accent ? `--project-accent: ${accent}` : undefined}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{preview ? `${title ?? 'Home'} · Studio preview` : fullTitle}</title>
+    <style is:inline>@view-transition { navigation: auto; } @media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }</style>
+    <link rel="expect" href="#main" blocking="render" />
+    {
+      preview ? (
+        <meta name="robots" content="noindex, nofollow" />
+      ) : (
+        <>
+          <meta name="description" content={description} />
+          {noindex ? <meta name="robots" content="noindex, follow" /> : <link rel="canonical" href={canonical} />}
+          <meta name="author" content={site.name} />
+          <meta property="og:type" content={ogType} />
+          <meta property="og:site_name" content={site.name} />
+          <meta property="og:title" content={title ?? site.name} />
+          <meta property="og:description" content={description} />
+          <meta property="og:url" content={canonical} />
+          <meta property="og:image" content={ogImage} />
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+          <meta property="og:image:alt" content={ogAlt} />
+          <meta property="og:locale" content="en_US" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <link rel="sitemap" href="/sitemap-index.xml" />
+          {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+        </>
+      )
+    }
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#fafaf8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0c0c0b" media="(prefers-color-scheme: dark)" />
+    <link rel="preload" href={monaLatin} as="font" type="font/woff2" crossorigin />
+
+    {
+      preview ? (
+        <script is:inline define:vars={{ defaults, STORAGE_KEY }}>
+          // Studio preview: apply the configuration before the first paint.
+          var c = Object.assign({}, defaults);
+          try { Object.assign(c, JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')); } catch (e) {}
+          try {
+            var m = location.hash.match(/c=([^&]+)/);
+            if (m) Object.assign(c, JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1]))))));
+          } catch (e) {}
+          try { if (window.name.indexOf('jbcfg:') === 0) Object.assign(c, JSON.parse(window.name.slice(6))); } catch (e) {}
+          var r = document.documentElement;
+          for (var k in defaults) r.setAttribute('data-' + k, c[k]);
+          try { if (sessionStorage.getItem('jb-preview-scheme') === 'dark' && c.dark !== 'none') { r.dataset.base = c.palette; r.dataset.palette = c.dark; r.dataset.scheme = 'dark'; } } catch (e) {}
+        </script>
+      ) : (
+        <script is:inline define:vars={{ darkPalettes }}>
+          // Live site: follow the device's dark mode, or the visitor's own choice.
+          var r = document.documentElement;
+          var light = r.dataset.palette, dark = r.dataset.dark;
+          if (darkPalettes.indexOf(light) !== -1) r.dataset.dark = 'none';
+          else if (dark && dark !== 'none') {
+            var pref = null;
+            try { pref = localStorage.getItem('theme'); } catch (e) {}
+            var wantDark = pref ? pref === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+            if (wantDark) { r.dataset.base = light; r.dataset.palette = dark; r.dataset.scheme = 'dark'; }
+          }
+        </script>
+      )
+    }
+    <script is:inline>
+      // Remember where the clicked card was, for the Open transition, and the direction for Push and Open.
+      (function () {
+        var r = document.documentElement;
+        try {
+          var o = JSON.parse(sessionStorage.getItem('jb-vt-rect') || 'null');
+          if (o) {
+            r.style.setProperty('--o-t', Math.max(0, o.t) + 'px');
+            r.style.setProperty('--o-l', Math.max(0, o.l) + 'px');
+            r.style.setProperty('--o-r', Math.max(0, innerWidth - o.r) + 'px');
+            r.style.setProperty('--o-b', Math.max(0, innerHeight - o.b) + 'px');
+            r.style.setProperty('--o-rad', (o.rad || 0) + 'px');
+            r.style.setProperty('--o-cx', (o.l + o.r) / 2 + 'px');
+            r.style.setProperty('--o-cy', (o.t + o.b) / 2 + 'px');
+          }
+        } catch (e) {}
+        window.addEventListener('pagereveal', function (e) {
+          if (!e.viewTransition) return;
+          try {
+            var a = navigation.activation;
+            if (a && a.navigationType === 'traverse' && a.from && a.entry && a.from.index > a.entry.index) r.dataset.dir = 'back';
+            e.viewTransition.finished.then(function () { delete r.dataset.dir; }, function () { delete r.dataset.dir; });
+          } catch (err) {}
+        });
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <Nav />
+    <main id="main" tabindex="-1"><slot /></main>
+    {footer && <Footer />}
+    <div class="cur cur--label" aria-hidden="true"><span></span></div>
+    <div class="ptr" aria-hidden="true"><span></span></div>
+    <div class="grain" aria-hidden="true"></div>
+    <canvas class="daylight" aria-hidden="true"></canvas>
+    <script>
+      import '../design/runtime.ts';
+    </script>
+  </body>
+</html>

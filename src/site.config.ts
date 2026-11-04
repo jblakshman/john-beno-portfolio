@@ -28,6 +28,14 @@ export const site = {
   },
   cv: '/files/john-beno-lakshman-cv.pdf',
   /**
+   * Sections that appear in the navigation and sitemap. Switch one on when it
+   * has real content. (The Design Studio preview always shows them.)
+   */
+  sections: {
+    apps: false,
+    notes: false,
+  },
+  /**
    * Profiles that belong to you. Every link here is shown in the footer and
    * listed in the structured data (sameAs), which helps Google connect them
    * to this site. Add LinkedIn first, then any others.

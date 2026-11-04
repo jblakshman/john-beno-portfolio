@@ -1,0 +1,17 @@
+---
+/**
+ * Optional top-level sections. A page is only built when its switch in
+ * site.config.ts (sections) is on; until then it lives in the Studio preview.
+ */
+import Site from '../layouts/Site.astro';
+import AppsContent from '../components/site/AppsContent.astro';
+import { site } from '../site.config';
+
+export function getStaticPaths() {
+  return site.sections.apps ? [{ params: { section: 'apps' } }] : [];
+}
+---
+
+<Site title="Apps" description={`Native Apple apps by ${site.name}, rebuilt for the browser so you can use them instead of watching a video.`}>
+  <AppsContent />
+</Site>

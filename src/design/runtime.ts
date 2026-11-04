@@ -2,18 +2,57 @@
  * Studio runtime. Runs inside every preview page, brings the chosen options to
  * life, and listens to the Studio panel so changes apply without reloading.
  */
-import Lenis from 'lenis';
+import type Lenis from 'lenis';
 import { defaults, STORAGE_KEY, type Config } from './options';
-import { syncImages } from './gl/images';
-import { syncDaylight, setDaylightHour } from './gl/daylight';
-import { initPointer } from './pointer';
-import { initGlass } from './glass';
-import { initScrub } from './scrub';
 
 const root = document.documentElement;
+const isPreview = root.hasAttribute('data-preview');
 const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const cfg = (k: string) => root.dataset[k] ?? defaults[k];
+
+/* Heavier pieces load only when the chosen look uses them ---------------- */
+const once = <T,>(load: () => Promise<T>) => {
+  let p: Promise<T> | null = null;
+  return () => (p ??= load());
+};
+const lazy = {
+  images: once(() => import('./gl/images')),
+  daylight: once(() => import('./gl/daylight')),
+  pointer: once(() => import('./pointer')),
+  glass: once(() => import('./glass')),
+  scrub: once(() => import('./scrub')),
+  lenis: once(() => import('lenis')),
+};
+const wantsImages = () => cfg('imgin') === 'develop' || cfg('imgmotion') === 'flex' || cfg('hover') === 'loupe' || cfg('hover') === 'develop' || cfg('images') === 'mono';
+let imagesLoaded = false;
+function syncImages(replay = false) {
+  if (!wantsImages() && !imagesLoaded) return;
+  lazy.images().then((m) => {
+    imagesLoaded = true;
+    m.syncImages(replay);
+  });
+}
+let daylightLoaded = false;
+function syncDaylight() {
+  if (cfg('ambient') !== 'daylight' && !daylightLoaded) return;
+  lazy.daylight().then((m) => {
+    daylightLoaded = true;
+    m.syncDaylight();
+  });
+}
+let pointerLoaded = false;
+function syncPointer() {
+  if (cfg('cursor') === 'native' || pointerLoaded || !fine) return;
+  pointerLoaded = true;
+  lazy.pointer().then((m) => m.initPointer());
+}
+let glassLoaded = false;
+function syncGlass() {
+  if (cfg('nav') !== 'island' || glassLoaded) return;
+  glassLoaded = true;
+  lazy.glass().then((m) => m.initGlass());
+}
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 
 /* Clock ----------------------------------------------------------------- */
@@ -164,19 +203,25 @@ document.addEventListener('pointerout', (e) => {
 
 /* Smooth scrolling ------------------------------------------------------ */
 let lenis: Lenis | null = null;
+let lenisToken = 0;
 function setupScroll() {
   const want = cfg('scroll') === 'smooth' && !reduce;
-  if (want && !lenis) {
-    lenis = new Lenis({ lerp: cfg('motion') === 'crisp' ? 0.15 : 0.085, smoothWheel: true, anchors: { offset: -80 } });
+  const token = ++lenisToken;
+  if (!want) {
+    lenis?.destroy();
+    lenis = null;
+    return;
+  }
+  if (lenis) return;
+  lazy.lenis().then(({ default: L }) => {
+    if (token !== lenisToken || lenis) return;
+    lenis = new L({ lerp: cfg('motion') === 'crisp' ? 0.15 : 0.085, smoothWheel: true, anchors: { offset: -80 } });
     const raf = (t: number) => {
       lenis?.raf(t);
       if (lenis) requestAnimationFrame(raf);
     };
     requestAnimationFrame(raf);
-  } else if (!want && lenis) {
-    lenis.destroy();
-    lenis = null;
-  }
+  });
 }
 
 /* Scroll-driven layouts -------------------------------------------------- */
@@ -332,7 +377,7 @@ island?.addEventListener('click', (e) => {
     island.toggleAttribute('data-open');
   }
 });
-const menu = document.getElementById('lab-menu');
+const menu = document.getElementById('site-menu');
 const openBtns = document.querySelectorAll<HTMLButtonElement>('[data-menu-open]');
 const setMenu = (open: boolean) => {
   if (!menu) return;
@@ -392,7 +437,7 @@ document.addEventListener('click', (e) => {
 /* Apply configuration ----------------------------------------------------- */
 function apply(config: Config, changed?: string, preview = false) {
   for (const k of Object.keys(defaults)) if (config[k]) root.setAttribute(`data-${k}`, config[k]);
-  if (!preview) {
+  if (!preview && isPreview) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
     } catch {}
@@ -407,6 +452,13 @@ function apply(config: Config, changed?: string, preview = false) {
   }
   if (all || ['imgin', 'imgmotion', 'hover', 'images', 'palette', 'layout', 'case', 'hero'].includes(changed!)) {
     requestAnimationFrame(() => syncImages(changed === 'imgin' || all));
+  }
+  if (all || changed === 'cursor') syncPointer();
+  if (all || changed === 'nav') syncGlass();
+  if (all || changed === 'palette' || changed === 'dark') {
+    delete root.dataset.scheme;
+    delete root.dataset.base;
+    try { sessionStorage.removeItem('jb-preview-scheme'); } catch {}
   }
   if (all || changed === 'imgin' || changed === 'layout') setupUnveil(true);
   if (all || changed === 'ambient' || changed === 'palette') syncDaylight();
@@ -423,22 +475,22 @@ function apply(config: Config, changed?: string, preview = false) {
   if (changed === 'hero' && !preview) window.scrollTo({ top: 0 });
   if ((changed === 'imgin' || changed === 'hover' || changed === 'imgmotion') && !preview && !document.querySelector('.case')) document.getElementById('work')?.scrollIntoView({ block: 'start' });
   if (changed === 'case' && !document.querySelector('.case')) {
-    const first = document.querySelector<HTMLAnchorElement>('a[href^="/lab/p/work/"]');
+    const first = document.querySelector<HTMLAnchorElement>('a[href*="/work/"]');
     if (first) location.href = first.href;
   }
 }
 
-window.addEventListener('message', (e) => {
+if (isPreview) window.addEventListener('message', (e) => {
   if (e.origin !== location.origin || !e.data || typeof e.data !== 'object') return;
   if (e.data.type === 'lab:config') apply(e.data.config, e.data.changed, !!e.data.preview);
-  if (e.data.type === 'lab:hour') setDaylightHour(e.data.hour);
+  if (e.data.type === 'lab:hour') lazy.daylight().then((m) => m.setDaylightHour(e.data.hour));
   if (e.data.type === 'lab:try-transition') {
     if (document.querySelector('.case')) {
       if (history.length > 1) history.back();
       else location.href = '/lab/p';
       return;
     }
-    const links = [...document.querySelectorAll<HTMLAnchorElement>('a[href^="/lab/p/work/"]')].filter((a) => a.offsetParent);
+    const links = [...document.querySelectorAll<HTMLAnchorElement>('a[href*="/work/"]')].filter((a) => a.offsetParent);
     const inView = links.find((a) => {
       const r = a.getBoundingClientRect();
       return r.bottom > 0 && r.top < innerHeight;
@@ -450,7 +502,7 @@ window.addEventListener('message', (e) => {
     }
   }
 });
-if (window.parent !== window) window.parent.postMessage({ type: 'lab:page', path: location.pathname, title: document.title }, location.origin);
+if (isPreview && window.parent !== window) window.parent.postMessage({ type: 'lab:page', path: location.pathname, title: document.title }, location.origin);
 
 /* Start ---------------------------------------------------------------- */
 setupScroll();
@@ -459,10 +511,55 @@ setupReveal();
 setupUnveil();
 syncImages();
 syncDaylight();
-initPointer();
-initGlass();
-initScrub();
+syncPointer();
+syncGlass();
+if (document.querySelector('[data-scrub]')) lazy.scrub().then((m) => m.initScrub());
 requestScroll();
+
+/* Videos that play while visible ---------------------------------------- */
+const autoVideos = document.querySelectorAll<HTMLVideoElement>('video[data-autoplay]');
+if (autoVideos.length && !reduce) {
+  const vio = new IntersectionObserver(
+    (entries) => entries.forEach((e) => {
+      const v = e.target as HTMLVideoElement;
+      if (e.isIntersecting) v.play().catch(() => {});
+      else v.pause();
+    }),
+    { rootMargin: '10% 0px' },
+  );
+  autoVideos.forEach((v) => vio.observe(v));
+}
+
+/* Light and dark ------------------------------------------------------- */
+document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((b) =>
+  b.addEventListener('click', () => {
+    const dark = root.dataset.dark;
+    if (!dark || dark === 'none') return;
+    const toDark = root.dataset.scheme !== 'dark';
+    const swap = () => {
+      if (toDark) {
+        root.dataset.base = root.dataset.palette ?? '';
+        root.dataset.palette = dark;
+        root.dataset.scheme = 'dark';
+      } else {
+        root.dataset.palette = root.dataset.base || cfg('palette');
+        delete root.dataset.scheme;
+        delete root.dataset.base;
+      }
+      try {
+        if (isPreview) sessionStorage.setItem('jb-preview-scheme', toDark ? 'dark' : 'light');
+        else localStorage.setItem('theme', toDark ? 'dark' : 'light');
+      } catch {}
+      syncImages();
+      syncDaylight();
+    };
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } };
+    if (!doc.startViewTransition || reduce) return swap();
+    root.dataset.switching = '';
+    const end = () => delete root.dataset.switching;
+    doc.startViewTransition(swap).finished.then(end, end);
+  }),
+);
 document.fonts?.ready.then(() => {
   fitAll();
   if (cfg('reveal') === 'lines') document.querySelectorAll<HTMLElement>('[data-rv]').forEach((el) => el.offsetParent && assignLines(el));

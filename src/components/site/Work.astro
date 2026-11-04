@@ -2,12 +2,14 @@
 import type { CollectionEntry } from 'astro:content';
 import Cover from './Cover.astro';
 import { site } from '../../site.config';
+import { paths } from '../../design/paths';
 
 interface Props {
   projects: CollectionEntry<'work'>[];
 }
 const { projects } = Astro.props;
-const href = (p: CollectionEntry<'work'>) => `/lab/p/work/${p.id}`;
+const P = paths(Astro.url);
+const href = (p: CollectionEntry<'work'>) => P.project(p.id);
 const n = (i: number) => String(i + 1).padStart(2, '0');
 const total = String(projects.length).padStart(2, '0');
 const cta = (p: CollectionEntry<'work'>) => (p.data.status === 'in-progress' ? 'Preview case study' : 'View case study');

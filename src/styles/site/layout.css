@@ -94,12 +94,27 @@ html[data-nav='corner'] .site-nav { mix-blend-mode: difference; }
 .menu:not([hidden]) ol li { animation: rise-in var(--dur) var(--ease) both; animation-delay: calc(0.15s + var(--i) * var(--stagger)); }
 @keyframes rise-in { from { transform: translateY(40%); opacity: 0; } }
 
+/* Light and dark: a half-filled disc that turns over */
+.nv-end { display: flex; align-items: center; gap: 16px; }
+.menu-actions { display: flex; align-items: center; gap: 14px; }
+.theme { display: inline-grid; place-items: center; width: 30px; height: 30px; margin: -4px; border-radius: 50%; flex: none; color: inherit; }
+.theme i { width: 13px; height: 13px; border-radius: 50%; box-shadow: inset 0 0 0 1.25px currentColor; background: linear-gradient(90deg, currentColor 50%, transparent 0); transition: transform var(--dur) var(--ease); }
+.theme:hover i { transform: rotate(-30deg); }
+html[data-scheme='dark'] .theme i { transform: rotate(180deg); }
+html[data-scheme='dark'] .theme:hover i { transform: rotate(150deg); }
+.theme--isl { width: 32px; height: 32px; margin: 0; color: var(--ink-2); }
+.nv--index .theme { margin-top: auto; margin-bottom: 24px; }
+html[data-dark='none'] .theme, html[data-dark='none'] .isl-links li:has(.theme) { display: none; }
+html[data-switching][data-pt]::view-transition-old(root) { animation: vt-fade-out var(--dur) var(--ease) both; }
+html[data-switching][data-pt]::view-transition-new(root) { animation: none; }
+
 @media (max-width: 760px) {
   .nv-mbtn { display: inline-flex; }
   .nv--bar nav, .nv-time { display: none; }
   .nv--index { position: static; width: auto; flex-direction: row; justify-content: space-between; align-items: center; height: var(--header-h); padding: 0 var(--gutter);
     background: color-mix(in oklab, var(--bg) 85%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
   .nv--index ol { flex-direction: row; gap: 12px; }
+  .nv--index .theme { margin: -4px; }
   .nv--index .lbl { display: none; }
   html[data-nav='index'] main, html[data-nav='index'] .site-foot { padding-left: 0; }
   .isl-now { display: none; }
@@ -333,3 +348,12 @@ html[data-radius='sharp'] .hs-chip { border-radius: 0; }
 .f-bottom { margin-top: 18px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 24px; font-size: 0.72rem; color: var(--ink-2); }
 .f-bottom ul { display: flex; gap: 18px; }
 @media (max-width: 900px) { .f-top > .lbl, .f-main, .f-links { grid-column: 1 / -1; } .f-links { display: flex; flex-wrap: wrap; gap: 8px 20px; } }
+
+/* ==================================================================
+   Plain text pages: Impressum, Privacy
+   ================================================================== */
+.doc { padding-top: calc(var(--header-h) + clamp(48px, 8vw, 120px)); max-width: calc(62ch + 2 * var(--gutter)); display: grid; gap: 14px; font-size: var(--t-md); line-height: 1.6; }
+.doc h1 { font-size: var(--t-2xl); line-height: 0.95; margin-bottom: 6px; }
+.doc h2 { margin-top: 28px; font-size: var(--t-md); font-weight: 600; }
+.doc .lead { font-size: var(--t-lg); line-height: 1.35; letter-spacing: -0.01em; }
+.doc .todo { display: inline-block; padding: 2px 8px; border-radius: 6px; background: #ffe7a3; color: #3a2a00; font-size: var(--t-sm); }

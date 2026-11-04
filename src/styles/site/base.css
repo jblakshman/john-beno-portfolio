@@ -25,6 +25,10 @@ ul[role='list'], ol[role='list'] { list-style: none; padding: 0; }
 [hidden] { display: none !important; }
 ::selection { background: var(--accent); color: var(--on-accent); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+main:focus { outline: none; }
+.skip { position: fixed; left: max(12px, env(safe-area-inset-left, 0px)); top: max(12px, env(safe-area-inset-top, 0px)); z-index: 100; padding: 10px 16px; border-radius: 999px;
+  background: var(--ink); color: var(--bg); font-size: var(--t-sm); font-weight: 500; transform: translateY(-200%); transition: transform var(--dur-s) var(--ease); }
+.skip:focus-visible { transform: none; outline-offset: 2px; }
 
 .wrap { padding-left: max(var(--gutter), env(safe-area-inset-left, 0px)); padding-right: max(var(--gutter), env(safe-area-inset-right, 0px)); }
 .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); }

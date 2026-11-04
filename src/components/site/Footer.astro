@@ -1,5 +1,8 @@
 ---
 import { site } from '../../site.config';
+import { paths } from '../../design/paths';
+const p = paths(Astro.url);
+const showApps = p.preview || site.sections.apps;
 ---
 
 <footer class="site-foot wrap" id="contact">
@@ -14,13 +17,15 @@ import { site } from '../../site.config';
     </div>
     <ul class="f-links" role="list">
       <li><a class="ln" href={site.cv} target="_blank" rel="noopener">CV (PDF) ↗</a></li>
-      <li><a class="ln" href="/lab/p/about">About</a></li>
-      <li><a class="ln" href="/lab/p/apps">Apps</a></li>
+      <li><a class="ln" href={p.about}>About</a></li>
+      {site.profiles.map((pr) => <li><a class="ln" href={pr.url} rel="me noopener" target="_blank">{pr.label} ↗</a></li>)}
+      {showApps && <li><a class="ln" href={p.apps}>Apps</a></li>}
     </ul>
   </div>
   <div class="f-word" aria-hidden="true"><span class="d" data-fit>{site.name}</span></div>
   <div class="f-bottom">
     <p>© {new Date().getFullYear()} {site.name}</p>
+    <ul role="list" class="f-legal"><li><a class="ln" href="/impressum">Impressum</a></li><li><a class="ln" href="/privacy">Privacy</a></li></ul>
     <p class="lbl">{site.location.city}, {site.location.countryName} · <time data-clock class="tab">--:--</time></p>
   </div>
 </footer>

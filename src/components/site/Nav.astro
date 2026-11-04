@@ -1,0 +1,74 @@
+---
+import { site } from '../../site.config';
+import { paths } from '../../design/paths';
+
+const p = paths(Astro.url);
+const path = Astro.url.pathname.replace(/\.html$/, '');
+const show = (k: 'apps' | 'notes') => p.preview || site.sections[k];
+const links = [
+  { href: p.work, label: 'Work', key: 'work' },
+  { href: p.about, label: 'About', key: 'about' },
+  ...(show('apps') ? [{ href: p.apps, label: 'Apps', key: 'apps' }] : []),
+  ...(show('notes') ? [{ href: p.notes, label: 'Notes', key: 'notes' }] : []),
+  { href: '#contact', label: 'Contact', key: 'contact' },
+].map((l, i) => ({ ...l, n: String(i + 1).padStart(2, '0') }));
+const current = (href: string) => !href.includes('#') && (path === href || path.startsWith(href + '/'));
+---
+
+<header class="site-nav">
+  <!-- Bar -->
+  <div class="nv nv--bar wrap">
+    <a class="nv-name ln" href={p.home}>{site.name}</a>
+    <nav aria-label="Main">
+      <ul role="list">{links.map((l) => <li><a class="ln" href={l.href} aria-current={current(l.href) ? 'page' : undefined}>{l.label}</a></li>)}</ul>
+    </nav>
+    <div class="nv-end">
+      <span class="lbl nv-time">{site.location.city} <time data-clock class="tab">--:--</time></span>
+      <button class="theme" type="button" data-theme-toggle aria-label="Switch between light and dark"><i aria-hidden="true"></i></button>
+      <button class="crn-btn nv-mbtn" type="button" data-menu-open aria-expanded="false" aria-controls="site-menu"><span class="ln">Menu</span></button>
+    </div>
+  </div>
+
+  <!-- Liquid Glass island -->
+  <div class="nv nv--island">
+    <div class="isl" data-island>
+      <a class="isl-name" href={p.home}><span class="isl-dot" aria-hidden="true"></span><span>{site.shortName}</span></a>
+      <span class="isl-now lbl" data-island-now aria-hidden="true">Home</span>
+      <nav class="isl-links" aria-label="Main">
+        <ul role="list">
+          {links.map((l) => <li><a href={l.href} aria-current={current(l.href) ? 'page' : undefined}>{l.label}</a></li>)}
+          <li><button class="theme theme--isl" type="button" data-theme-toggle aria-label="Switch between light and dark"><i aria-hidden="true"></i></button></li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Side index -->
+  <div class="nv nv--index">
+    <a class="nv-name ln" href={p.home}>{site.name}</a>
+    <nav aria-label="Main">
+      <ol role="list">{links.map((l) => <li><a href={l.href} data-index-link={l.key} aria-current={current(l.href) ? 'page' : undefined}><span class="lbl tab">{l.n}</span> {l.label}</a></li>)}</ol>
+    </nav>
+    <button class="theme" type="button" data-theme-toggle aria-label="Switch between light and dark"><i aria-hidden="true"></i></button>
+  </div>
+
+  <!-- Corners -->
+  <div class="nv nv--corner wrap">
+    <a class="nv-name ln" href={p.home}>{site.name}</a>
+    <button class="crn-btn" type="button" data-menu-open aria-expanded="false" aria-controls="site-menu"><span class="ln">Menu</span></button>
+  </div>
+</header>
+
+<div class="menu" id="site-menu" hidden>
+  <div class="menu-in wrap">
+    <div class="menu-top">
+      <span class="lbl">Menu</span>
+      <div class="menu-actions">
+        <button class="theme" type="button" data-theme-toggle aria-label="Switch between light and dark"><i aria-hidden="true"></i></button>
+        <button class="crn-btn" type="button" data-menu-close><span class="ln">Close</span></button>
+      </div>
+    </div>
+    <nav aria-label="Menu"><ol role="list">{links.map((l, i) => <li style={`--i:${i}`}><a class="d ln" href={l.href} data-menu-link>{l.label}</a></li>)}</ol></nav>
+    <p class="lbl">{site.email} · {site.location.city}, {site.location.countryName}</p>
+  </div>
+</div>
