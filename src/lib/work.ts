@@ -84,3 +84,14 @@ export function accentVars(accent: ProjectData['accent']) {
   const dark = typeof accent === 'string' ? lighten(accent, 0.3) : accent.dark;
   return `--pa-l:${light};--pa-l-on:${onColor(light)};--pa-d:${dark};--pa-d-on:${onColor(dark)}`;
 }
+
+/** Minutes to read a project's text (about 230 words a minute), at least one. */
+export function readingTime(body = '') {
+  const text = body
+    .replace(/^import .*$/gm, '')
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/[#*_`>|-]/g, ' ');
+  const words = text.split(/\s+/).filter((w) => /\w/.test(w)).length;
+  return Math.max(1, Math.round(words / 230));
+}

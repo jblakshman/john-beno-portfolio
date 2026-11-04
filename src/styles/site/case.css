@@ -1,5 +1,8 @@
 /* Case studies */
-.crumbs { display: flex; gap: 8px; margin-bottom: clamp(20px, 3vw, 36px); }
+.crumbs { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; margin-bottom: clamp(20px, 3vw, 36px); }
+.crumbs-end { margin-left: auto; }
+[data-share] { font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; }
+[data-share][data-done] { color: var(--ink); }
 .C-classic { padding-top: calc(var(--header-h) + clamp(48px, 8vw, 120px)); }
 .cc-title { font-size: var(--t-display); line-height: 0.86; margin-left: -0.04em; }
 .cc-sum { margin-top: clamp(20px, 3vw, 32px); font-size: var(--t-lg); line-height: 1.25; max-width: 30ch; letter-spacing: -0.015em; }

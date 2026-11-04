@@ -421,6 +421,29 @@ document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((b) =>
   }),
 );
 
+/* Share: the system share sheet on phones, otherwise copy the link -------- */
+document.querySelectorAll<HTMLButtonElement>('[data-share]').forEach((b) =>
+  b.addEventListener('click', async () => {
+    const url = location.href.replace('/lab/p', '').split('#')[0];
+    const title = b.dataset.shareTitle || document.title;
+    const label = b.textContent;
+    const coarse = window.matchMedia('(pointer: coarse)').matches;
+    try {
+      if (coarse && navigator.share) return await navigator.share({ title, url });
+      await navigator.clipboard.writeText(url);
+      b.textContent = 'Link copied';
+    } catch (e) {
+      if ((e as Error).name === 'AbortError') return;
+      b.textContent = 'Copy the address above';
+    }
+    b.dataset.done = '';
+    setTimeout(() => {
+      b.textContent = label;
+      delete b.dataset.done;
+    }, 1800);
+  }),
+);
+
 /* Page transitions: remember the clicked card for Open ------------------- */
 const onScreen = (el: Element | null) => {
   if (!el) return false;
