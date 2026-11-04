@@ -3,9 +3,19 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
   X-Frame-Options: SAMEORIGIN
+  Cross-Origin-Opener-Policy: same-origin
+  Strict-Transport-Security: max-age=31536000
 
+# Hashed build files never change, so browsers keep them for a year.
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
 
 /media/*
   Cache-Control: public, max-age=2592000
+
+/og/*
+  Cache-Control: public, max-age=86400
+
+# The Design Studio is private: never in search results.
+/lab*
+  X-Robots-Tag: noindex, nofollow

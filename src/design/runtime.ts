@@ -538,14 +538,20 @@ if (isPreview && window.parent !== window) {
 /* Start ---------------------------------------------------------------- */
 setupScroll();
 fitAll();
-setupReveal();
-setupUnveil();
-syncImages();
-syncDaylight();
-syncPointer();
-syncGlass();
-if (document.querySelector('[data-scrub]')) lazy.scrub().then((m) => m.initScrub());
-requestScroll();
+// A page the browser prerendered (on hover, before the click) waits until it
+// is actually shown, so its entrance plays for the visitor, not in the dark.
+const show = () => {
+  setupReveal();
+  setupUnveil();
+  syncImages();
+  syncDaylight();
+  syncPointer();
+  syncGlass();
+  if (document.querySelector('[data-scrub]')) lazy.scrub().then((m) => m.initScrub());
+  requestScroll();
+};
+if ((document as Document & { prerendering?: boolean }).prerendering) document.addEventListener('prerenderingchange', show, { once: true });
+else show();
 
 /* Videos that play while visible ---------------------------------------- */
 const autoVideos = document.querySelectorAll<HTMLVideoElement>('video[data-autoplay]');

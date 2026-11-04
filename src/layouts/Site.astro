@@ -66,6 +66,18 @@ const preloadFonts: Record<string, string[]> = {
   editorial: [newsreader, geist],
   wide: [archivo, martianLatin],
 };
+/**
+ * Chrome and Edge prerender a page when you hover its link, so it appears
+ * instantly and its page transition starts at once. Other browsers ignore it.
+ */
+const speculation = {
+  prerender: [
+    {
+      where: { and: [{ href_matches: '/*' }, { not: { href_matches: '/lab*' } }, { not: { href_matches: '/*\\.*' } }, { not: { selector_matches: '[target=_blank], [download]' } }] },
+      eagerness: 'moderate',
+    },
+  ],
+};
 const fonts = preview ? [monaLatin] : (preloadFonts[design.type] ?? []);
 const attrs = Object.fromEntries(Object.keys(defaults).map((k) => [`data-${k}`, design[k]]));
 ---
@@ -98,6 +110,7 @@ const attrs = Object.fromEntries(Object.keys(defaults).map((k) => [`data-${k}`, 
           <meta property="og:locale" content="en_US" />
           <meta name="twitter:card" content="summary_large_image" />
           <link rel="sitemap" href="/sitemap-index.xml" />
+          <script type="speculationrules" is:inline set:html={JSON.stringify(speculation)} />
           {site.sections.notes && <link rel="alternate" type="application/rss+xml" title={`${site.name} · Notes`} href="/rss.xml" />}
           {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
         </>
@@ -144,19 +157,25 @@ const attrs = Object.fromEntries(Object.keys(defaults).map((k) => [`data-${k}`, 
       // Remember where the clicked card was, for the Open transition, and the direction for Push and Open.
       (function () {
         var r = document.documentElement;
-        try {
-          var o = JSON.parse(sessionStorage.getItem('jb-vt-rect') || 'null');
-          if (o) {
-            r.style.setProperty('--o-t', Math.max(0, o.t) + 'px');
-            r.style.setProperty('--o-l', Math.max(0, o.l) + 'px');
-            r.style.setProperty('--o-r', Math.max(0, innerWidth - o.r) + 'px');
-            r.style.setProperty('--o-b', Math.max(0, innerHeight - o.b) + 'px');
-            r.style.setProperty('--o-rad', (o.rad || 0) + 'px');
-            r.style.setProperty('--o-cx', (o.l + o.r) / 2 + 'px');
-            r.style.setProperty('--o-cy', (o.t + o.b) / 2 + 'px');
-          }
-        } catch (e) {}
+        // Read on load and again when the page is revealed: a prerendered page
+        // loaded before the click, so only the reveal knows which card it was.
+        function readRect() {
+          try {
+            var o = JSON.parse(sessionStorage.getItem('jb-vt-rect') || 'null');
+            if (o) {
+              r.style.setProperty('--o-t', Math.max(0, o.t) + 'px');
+              r.style.setProperty('--o-l', Math.max(0, o.l) + 'px');
+              r.style.setProperty('--o-r', Math.max(0, innerWidth - o.r) + 'px');
+              r.style.setProperty('--o-b', Math.max(0, innerHeight - o.b) + 'px');
+              r.style.setProperty('--o-rad', (o.rad || 0) + 'px');
+              r.style.setProperty('--o-cx', (o.l + o.r) / 2 + 'px');
+              r.style.setProperty('--o-cy', (o.t + o.b) / 2 + 'px');
+            }
+          } catch (e) {}
+        }
+        readRect();
         window.addEventListener('pagereveal', function (e) {
+          readRect();
           if (!e.viewTransition) return;
           try {
             var a = navigation.activation;

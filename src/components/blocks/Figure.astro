@@ -7,6 +7,7 @@ import { Picture, getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import { dataW, fit, imageSizes, type Width } from './width';
 import '../../styles/site/blocks.css';
+import { onLoaded, placeholderStyle } from '../../lib/placeholder';
 
 interface Props {
   src: ImageMetadata;
@@ -24,14 +25,15 @@ interface Props {
 }
 const { src, alt, caption, w = 'column', frame = 'none', ratio, loading = 'lazy', zoom = w !== 'full' } = Astro.props;
 const s = imageSizes[w];
+const ph = await placeholderStyle(src);
 const large = zoom ? (await getImage({ src, width: Math.min(src.width, 2400), format: 'webp', quality: 82 })).src : undefined;
 ---
 
 <figure class:list={['blk fig', `fig--${frame}`]} data-w={dataW(w)} data-zoom={large} data-cur={zoom ? 'Zoom' : undefined}>
-  <div class="fig-m" style={ratio ? `aspect-ratio:${ratio}` : undefined}>
+  <div class="fig-m" data-ph style={`${ratio ? `aspect-ratio:${ratio};` : ''}${frame === 'none' ? ph : ''}`}>
     {zoom && <button type="button" class="fig-zoom" aria-label={`Enlarge image: ${alt}`}></button>}
     {frame === 'browser' && <span class="fig-bar" aria-hidden="true"><i></i><i></i><i></i></span>}
-    <Picture src={src} alt={alt} formats={['avif', 'webp']} fallbackFormat={src.format === 'png' ? 'png' : 'jpg'} widths={fit(s.widths, src.width)} sizes={s.sizes} loading={loading} decoding="async" />
+    <Picture src={src} alt={alt} formats={['avif', 'webp']} fallbackFormat={src.format === 'png' ? 'png' : 'jpg'} widths={fit(s.widths, src.width)} sizes={s.sizes} loading={loading} decoding="async" onload={onLoaded} />
   </div>
   {caption && <figcaption>{caption}</figcaption>}
 </figure>

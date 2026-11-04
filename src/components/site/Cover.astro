@@ -1,6 +1,7 @@
 ---
 import { Picture } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
+import { onLoaded, placeholderStyle } from '../../lib/placeholder';
 
 interface Props {
   project: CollectionEntry<'work'>;
@@ -15,9 +16,10 @@ interface Props {
 }
 const { project, sizes = '(min-width: 900px) 60vw, 100vw', eager = false, class: cls, vt = true, alt = false, video = true, style = '' } = Astro.props;
 const d = project.data;
+const ph = await placeholderStyle(d.cover);
 ---
 
-<div class:list={['m', cls]} data-in data-vt={vt ? '' : undefined} style={`${vt ? `--vt: w-${project.id};` : ''}${style}`}>
+<div class:list={['m', cls]} data-in data-ph data-vt={vt ? '' : undefined} style={`${vt ? `--vt: w-${project.id};` : ''}${ph};${style}`}>
   <Picture
     src={d.cover}
     alt={alt ? d.coverAlt : ''}
@@ -26,6 +28,8 @@ const d = project.data;
     widths={[640, 960, 1280, 1800]}
     sizes={sizes}
     loading={eager ? 'eager' : 'lazy'}
+    fetchpriority={eager ? 'high' : undefined}
+    onload={onLoaded}
     decoding="async"
     class="fill"
   />

@@ -7,6 +7,7 @@ import { render } from 'astro:content';
 import { Picture } from 'astro:assets';
 import { paths } from '../../design/paths';
 import { facts, sortedLinks, type Project } from '../../lib/work';
+import { onLoaded, placeholderStyle } from '../../lib/placeholder';
 
 interface Props {
   project: Project;
@@ -20,7 +21,9 @@ const { Content, headings } = await render(project);
 const sections = headings.filter((h) => h.depth === 2);
 const rows = facts(d);
 const links = sortedLinks(d);
-const vt = `--vt: w-${project.id}`;
+const ph = await placeholderStyle(d.cover);
+const vt = `--vt: w-${project.id};${ph}`;
+const nextPh = next ? await placeholderStyle(next.data.cover) : '';
 const pic = (sizes: string, cls = 'fill') => ({
   src: d.cover,
   alt: d.coverAlt,
@@ -29,6 +32,8 @@ const pic = (sizes: string, cls = 'fill') => ({
   widths: [800, 1200, 1600, 2200],
   sizes,
   loading: 'eager' as const,
+  fetchpriority: 'high' as const,
+  onload: onLoaded,
   class: cls,
 });
 const inProgress = d.status === 'in-progress';
@@ -58,14 +63,14 @@ const v = variantOf(P.preview);
         </dd>
       </div>
     </dl>
-    <div class="m cc-hero" data-vt style={vt}><Picture {...pic('100vw')} /></div>
+    <div class="m cc-hero" data-vt data-ph style={vt}><Picture {...pic('100vw')} /></div>
   </header>
   )}
 
   <!-- Cinematic -->
   {v('case', 'cinematic') && (
   <header class="C C-cinematic">
-    <div class="m ci-hero" data-vt style={vt}><Picture {...pic('100vw')} /></div>
+    <div class="m ci-hero" data-vt data-ph style={vt}><Picture {...pic('100vw')} /></div>
     <div class="ci-over wrap">
       <p class="lbl">{d.context}{inProgress && ' · In progress'}</p>
       <h1 class="d ci-title" data-rv>{d.title}</h1>
@@ -86,7 +91,7 @@ const v = variantOf(P.preview);
     <p class="lbl ce-kicker">{d.context} · {d.role ?? d.disciplines.join(', ')}</p>
     <h1 class="d ce-title" data-rv>{d.title}</h1>
     <p class="ce-sum">{d.summary}</p>
-    <div class="m ce-hero" data-vt style={vt}><Picture {...pic('(min-width: 900px) 80vw, 100vw')} /></div>
+    <div class="m ce-hero" data-vt data-ph style={vt}><Picture {...pic('(min-width: 900px) 80vw, 100vw')} /></div>
     <p class="lbl ce-credit">
       {[d.period ?? d.year, d.tools.join(', ')].filter(Boolean).join(' · ')}
       {links.map((l) => <> · <a class="ln" href={l.url} {...ext}>{l.label} ↗</a></>)}
@@ -147,8 +152,8 @@ const v = variantOf(P.preview);
           <span class="d next-title">{next.data.title} →</span>
           <span class="ink-2">{next.data.summary}</span>
         </span>
-        <span class="m next-m" data-vt style={`--vt: w-${next.id}`}>
-          <Picture src={next.data.cover} alt="" formats={['avif', 'webp']} fallbackFormat="jpg" widths={[640, 960, 1280]} sizes="40vw" class="fill" />
+        <span class="m next-m" data-vt data-ph style={`--vt: w-${next.id};${nextPh}`}>
+          <Picture src={next.data.cover} alt="" formats={['avif', 'webp']} fallbackFormat="jpg" widths={[640, 960, 1280]} sizes="40vw" class="fill" onload={onLoaded} />
         </span>
       </a>
     </nav>

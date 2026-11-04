@@ -284,3 +284,17 @@ html.lenis, html.lenis body { height: auto; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
 }
+
+/* Image placeholders: the frame shows the image's own colors, softly blurred,
+   until it has loaded; then the image fades in over it. Without scripting,
+   images simply show as they load. */
+[data-ph][style*='--ph-c'] { background-color: var(--ph-c); isolation: isolate; }
+[data-ph][style*='--ph-c']::before { content: ''; position: absolute; inset: -24px; z-index: -1; background: var(--ph) center / cover no-repeat; filter: blur(18px) saturate(1.1);
+  transition: opacity 0.6s var(--ease); pointer-events: none; }
+[data-ph]:has(img[data-l])::before { opacity: 0; }
+@media (scripting: enabled) {
+  [data-ph] img:not([data-l]) { opacity: 0; }
+  [data-ph] img[data-l] { animation: ph-in 0.5s var(--ease) both; }
+}
+@keyframes ph-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { [data-ph] img[data-l] { animation: none; } }
