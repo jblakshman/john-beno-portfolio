@@ -433,5 +433,5 @@ a:hover .arrow--ne {
 
 /* The playground is always dark, so the theme switch has nothing to do there. */
 .force-dark [data-theme-toggle] {
-  display: none;
+  display: none !important;
 }
