@@ -17,7 +17,7 @@ const { project, sizes = '(min-width: 900px) 60vw, 100vw', eager = false, class:
 const d = project.data;
 ---
 
-<div class:list={['m', cls]} data-vt={vt ? '' : undefined} style={`${vt ? `--vt: w-${project.id};` : ''}${style}`}>
+<div class:list={['m', cls]} data-in data-vt={vt ? '' : undefined} style={`${vt ? `--vt: w-${project.id};` : ''}${style}`}>
   <Picture
     src={d.cover}
     alt={alt ? d.coverAlt : ''}
@@ -29,9 +29,4 @@ const d = project.data;
     decoding="async"
     class="fill"
   />
-  {video && d.previewVideo && <video class="pv" data-src={d.previewVideo} muted loop playsinline preload="none" aria-hidden="true" />}
-  <div class="cap" aria-hidden="true">
-    <span>{d.title}</span>
-    <span class="lbl">{d.disciplines.join(' · ')}</span>
-  </div>
 </div>

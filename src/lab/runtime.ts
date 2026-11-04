@@ -1,10 +1,14 @@
 /**
- * Studio runtime. Runs inside every preview page and brings the chosen
- * options to life. It also listens to the Studio panel (postMessage) so
- * changes apply instantly without reloading.
+ * Studio runtime. Runs inside every preview page, brings the chosen options to
+ * life, and listens to the Studio panel so changes apply without reloading.
  */
 import Lenis from 'lenis';
 import { defaults, STORAGE_KEY, type Config } from './options';
+import { syncImages } from './gl/images';
+import { syncDaylight, setDaylightHour } from './gl/daylight';
+import { initPointer } from './pointer';
+import { initGlass } from './glass';
+import { initScrub } from './scrub';
 
 const root = document.documentElement;
 const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
@@ -12,17 +16,13 @@ const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const cfg = (k: string) => root.dataset[k] ?? defaults[k];
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 
-/* ------------------------------------------------------------------ */
-/* Clock                                                               */
-/* ------------------------------------------------------------------ */
+/* Clock ----------------------------------------------------------------- */
 const clockFmt = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' });
 const tick = () => document.querySelectorAll<HTMLTimeElement>('[data-clock]').forEach((c) => (c.textContent = clockFmt.format(new Date())));
 tick();
 setInterval(tick, 15000);
 
-/* ------------------------------------------------------------------ */
-/* Fit text to width ([data-fit])                                      */
-/* ------------------------------------------------------------------ */
+/* Fit text to its container ([data-fit]) ------------------------------- */
 function fitAll() {
   document.querySelectorAll<HTMLElement>('[data-fit]').forEach((el) => {
     const box = el.parentElement;
@@ -31,18 +31,17 @@ function fitAll() {
     el.style.display = 'inline-block';
     const natural = el.getBoundingClientRect().width;
     el.style.display = '';
-    const avail = box.clientWidth - parseFloat(getComputedStyle(box).paddingLeft) - parseFloat(getComputedStyle(box).paddingRight);
+    const cs = getComputedStyle(box);
+    const avail = box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
     if (natural > 0) el.style.setProperty('--fit', `${Math.floor(((100 * avail) / natural) * 10) / 10}px`);
   });
 }
 
-/* ------------------------------------------------------------------ */
-/* Text entrance                                                       */
-/* ------------------------------------------------------------------ */
+/* Text entrance --------------------------------------------------------- */
 const originals = new WeakMap<HTMLElement, string>();
 let revealIO: IntersectionObserver | null = null;
 
-function splitWords(el: HTMLElement, letters: boolean) {
+function splitWords(el: HTMLElement) {
   let i = 0;
   const walk = (node: Node) => {
     for (const child of [...node.childNodes]) {
@@ -52,32 +51,18 @@ function splitWords(el: HTMLElement, letters: boolean) {
         const frag = document.createDocumentFragment();
         text.split(/(\s+)/).forEach((part) => {
           if (!part) return;
-          if (/^\s+$/.test(part)) {
-            frag.appendChild(document.createTextNode(' '));
-            return;
-          }
+          if (/^\s+$/.test(part)) return frag.appendChild(document.createTextNode(' '));
           const w = document.createElement('span');
           w.className = 'rw';
+          w.style.setProperty('--i', String(i++));
           const inner = document.createElement('span');
           inner.className = 'ri';
-          if (letters) {
-            for (const ch of part) {
-              const c = document.createElement('span');
-              c.className = 'rc';
-              c.textContent = ch;
-              c.style.setProperty('--i', String(i++));
-              inner.appendChild(c);
-            }
-          } else {
-            inner.textContent = part;
-            w.style.setProperty('--i', String(i++));
-          }
+          inner.textContent = part;
           w.appendChild(inner);
           frag.appendChild(w);
         });
         child.replaceWith(frag);
       } else if (child instanceof HTMLElement) {
-        // Inline images and chips move as one piece.
         if (child.querySelector('img') || child.matches('img')) {
           child.classList.add('ratom');
           child.style.setProperty('--i', String(i++));
@@ -89,10 +74,9 @@ function splitWords(el: HTMLElement, letters: boolean) {
 }
 
 function assignLines(el: HTMLElement) {
-  const items = [...el.querySelectorAll<HTMLElement>('.rw, .ratom')];
   let line = -1;
   let lastTop = -Infinity;
-  for (const it of items) {
+  for (const it of el.querySelectorAll<HTMLElement>('.rw, .ratom')) {
     const top = it.offsetTop;
     if (top > lastTop + 4) {
       line++;
@@ -111,109 +95,79 @@ function setupReveal(replay = false) {
     el.classList.add('rv-reset');
     el.classList.remove('in');
     el.innerHTML = originals.get(el)!;
-    if (mode === 'lines' || mode === 'words' || mode === 'letters') splitWords(el, mode === 'letters');
+    if (mode === 'lines' || mode === 'words') splitWords(el);
   }
   if (mode === 'lines') els.forEach((el) => el.offsetParent && assignLines(el));
   void document.body.offsetHeight;
   els.forEach((el) => el.classList.remove('rv-reset'));
-  if (mode === 'none' || reduce) {
-    els.forEach((el) => el.classList.add('in'));
-    return;
-  }
+  if (mode === 'none' || reduce) return els.forEach((el) => el.classList.add('in'));
   revealIO = new IntersectionObserver(
     (entries) =>
       entries.forEach((e) => {
-        if (e.isIntersecting) {
-          (e.target as HTMLElement).classList.add('in');
-          revealIO?.unobserve(e.target);
-        }
+        if (!e.isIntersecting) return;
+        (e.target as HTMLElement).classList.add('in');
+        revealIO?.unobserve(e.target);
       }),
-    { threshold: 0.15, rootMargin: '0px 0px -5% 0px' },
+    { threshold: 0.15, rootMargin: '0px 0px -6% 0px' },
   );
   const start = () => els.forEach((el) => revealIO!.observe(el));
-  if (replay) requestAnimationFrame(() => requestAnimationFrame(start));
-  else start();
+  replay ? requestAnimationFrame(() => requestAnimationFrame(start)) : start();
 }
 
-/* ------------------------------------------------------------------ */
-/* Project hovers: preview video and lift                              */
-/* ------------------------------------------------------------------ */
-document.addEventListener('pointerover', (e) => {
-  const p = (e.target as HTMLElement).closest?.('.p');
-  if (!p || cfg('hover') !== 'preview' || !fine) return;
-  const v = p.querySelector<HTMLVideoElement>('video.pv');
-  if (!v) return;
-  if (!v.src) v.src = v.dataset.src!;
-  v.play().then(() => (v.dataset.ready = ''), () => {});
-});
-document.addEventListener('pointerout', (e) => {
-  const p = (e.target as HTMLElement).closest?.('.p');
-  if (!p || p.contains(e.relatedTarget as Node)) return;
-  p.querySelector<HTMLVideoElement>('video.pv')?.pause();
-  const m = p.querySelector<HTMLElement>('.m');
-  if (m) {
-    m.style.removeProperty('--rx');
-    m.style.removeProperty('--ry');
-  }
-});
+/* Image entrance: Unveil ------------------------------------------------ */
+let unveilIO: IntersectionObserver | null = null;
+function setupUnveil(replay = false) {
+  unveilIO?.disconnect();
+  const frames = [...document.querySelectorAll<HTMLElement>('.m[data-in]')];
+  if (cfg('imgin') !== 'unveil' || reduce) return frames.forEach((f) => (f.dataset.in = 'on'));
+  if (replay) frames.forEach((f) => (f.dataset.in = ''));
+  // A frame clipped to nothing never counts as visible, so watch its parent instead.
+  const owner = new Map<Element, HTMLElement[]>();
+  frames.forEach((f) => {
+    if (f.dataset.in === 'on' || !f.parentElement) return;
+    const list = owner.get(f.parentElement) ?? [];
+    list.push(f);
+    owner.set(f.parentElement, list);
+  });
+  unveilIO = new IntersectionObserver(
+    (entries) =>
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        owner.get(e.target)?.forEach((f) => (f.dataset.in = 'on'));
+        unveilIO?.unobserve(e.target);
+      }),
+    { threshold: 0.08 },
+  );
+  requestAnimationFrame(() => owner.forEach((_, el) => unveilIO!.observe(el)));
+}
+
+/* Lift hover ------------------------------------------------------------ */
 document.addEventListener('pointermove', (e) => {
   if (cfg('hover') !== 'lift' || !fine) return;
-  const p = (e.target as HTMLElement).closest?.('.p');
-  const m = p?.querySelector<HTMLElement>('.m');
+  const m = (e.target as HTMLElement).closest?.('.p')?.querySelector<HTMLElement>('.m');
   if (!m) return;
   const r = m.getBoundingClientRect();
   const x = (e.clientX - r.left) / r.width;
   const y = (e.clientY - r.top) / r.height;
-  m.style.setProperty('--ry', `${(x - 0.5) * 7}deg`);
-  m.style.setProperty('--rx', `${(0.5 - y) * 5}deg`);
+  m.style.setProperty('--ry', `${(x - 0.5) * 6}deg`);
+  m.style.setProperty('--rx', `${(0.5 - y) * 4}deg`);
   m.style.setProperty('--gx', `${x * 100}%`);
   m.style.setProperty('--gy', `${y * 100}%`);
 });
+document.addEventListener('pointerout', (e) => {
+  const p = (e.target as HTMLElement).closest?.('.p');
+  if (!p || p.contains(e.relatedTarget as Node)) return;
+  const m = p.querySelector<HTMLElement>('.m');
+  m?.style.removeProperty('--rx');
+  m?.style.removeProperty('--ry');
+});
 
-/* ------------------------------------------------------------------ */
-/* Cursor                                                              */
-/* ------------------------------------------------------------------ */
-if (fine) {
-  const label = document.querySelector<HTMLElement>('.cur--label')!;
-  const labelText = label.querySelector('span')!;
-  const dot = document.querySelector<HTMLElement>('.cur--dot')!;
-  let x = -100, y = -100, lx = -100, ly = -100, dx = -100, dy = -100;
-  const loop = () => {
-    lx += (x - lx) * 0.25;
-    ly += (y - ly) * 0.25;
-    dx += (x - dx) * 0.35;
-    dy += (y - dy) * 0.35;
-    label.style.transform = `translate3d(${lx}px, ${ly}px, 0)`;
-    dot.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
-    requestAnimationFrame(loop);
-  };
-  requestAnimationFrame(loop);
-  document.addEventListener('pointermove', (e) => {
-    x = e.clientX;
-    y = e.clientY;
-    const t = e.target as HTMLElement;
-    const c = t.closest?.<HTMLElement>('[data-cur]');
-    if (c) {
-      labelText.textContent = c.dataset.cur ?? '';
-      label.dataset.on = '';
-    } else delete label.dataset.on;
-    if (t.closest?.('a, button, [data-cur]')) dot.dataset.on = '';
-    else delete dot.dataset.on;
-  });
-  document.addEventListener('pointerleave', () => {
-    delete label.dataset.on;
-    delete dot.dataset.on;
-  });
-}
-
-/* ------------------------------------------------------------------ */
-/* Smooth scrolling                                                    */
-/* ------------------------------------------------------------------ */
+/* Smooth scrolling ------------------------------------------------------ */
 let lenis: Lenis | null = null;
 function setupScroll() {
-  const want = cfg('scroll') !== 'native' && !reduce;
+  const want = cfg('scroll') === 'smooth' && !reduce;
   if (want && !lenis) {
-    lenis = new Lenis({ lerp: cfg('motion') === 'crisp' ? 0.16 : 0.09, smoothWheel: true, anchors: { offset: -80 } });
+    lenis = new Lenis({ lerp: cfg('motion') === 'crisp' ? 0.15 : 0.085, smoothWheel: true, anchors: { offset: -80 } });
     const raf = (t: number) => {
       lenis?.raf(t);
       if (lenis) requestAnimationFrame(raf);
@@ -225,41 +179,21 @@ function setupScroll() {
   }
 }
 
-/* ------------------------------------------------------------------ */
-/* Scroll-driven layouts and progress                                  */
-/* ------------------------------------------------------------------ */
+/* Scroll-driven layouts -------------------------------------------------- */
 let ticking = false;
 let indexHover = false;
-const sections = () => [...document.querySelectorAll<HTMLElement>('[data-section]')].filter((s) => s.offsetParent);
-
 function onScroll() {
   ticking = false;
   const vh = window.innerHeight;
-  const max = document.documentElement.scrollHeight - vh;
-  root.style.setProperty('--sp', String(max > 0 ? clamp(window.scrollY / max) : 0));
   const layout = cfg('layout');
 
-  // Current section (progress counter, island, side index)
-  const secs = sections();
-  let cur = secs[0];
-  for (const s of secs) if (s.getBoundingClientRect().top < vh * 0.4) cur = s;
-  if (cur) {
-    const name = cur.dataset.section!;
-    const n = document.querySelector('[data-counter-n]');
-    const t = document.querySelector('[data-counter-t]');
-    if (t && t.textContent !== name) {
-      t.textContent = name;
-      if (n) n.textContent = String(secs.indexOf(cur) + 1).padStart(2, '0');
-    }
-    const now = document.querySelector('[data-island-now]');
-    if (now) now.textContent = name;
-    document.querySelectorAll<HTMLElement>('[data-index-link]').forEach((a) => {
-      const on = (a.dataset.indexLink === 'work' && name === 'Work') || (a.dataset.indexLink === 'contact' && cur === secs[secs.length - 1]);
-      on ? (a.dataset.active = '') : delete a.dataset.active;
-    });
+  const now = document.querySelector('[data-island-now]');
+  if (now) {
+    let name = 'Home';
+    for (const s of document.querySelectorAll<HTMLElement>('[data-section]')) if (s.offsetParent && s.getBoundingClientRect().top < vh * 0.4) name = s.dataset.section!;
+    if (now.textContent !== name) now.textContent = name;
   }
 
-  // Reel: vertical scroll moves the strip sideways
   if (layout === 'reel' && window.innerWidth > 760) {
     const sec = document.querySelector<HTMLElement>('[data-reel]');
     const track = document.querySelector<HTMLElement>('[data-reel-track]');
@@ -267,15 +201,14 @@ function onScroll() {
       const r = sec.getBoundingClientRect();
       const p = clamp(-r.top / (r.height - vh));
       const shift = Math.max(0, track.scrollWidth - window.innerWidth);
-      track.style.setProperty('--rx', `${-p * shift}px`);
-      sec.style.setProperty('--rp', String(p));
+      track.style.setProperty('--rx', `${(-p * shift).toFixed(1)}px`);
+      sec.style.setProperty('--rp', p.toFixed(4));
+      const n = track.children.length;
       const count = sec.querySelector('[data-reel-count]');
-      const nItems = track.children.length;
-      if (count) count.textContent = `${String(Math.min(nItems, Math.round(p * (nItems - 1)) + 1)).padStart(2, '0')} / ${String(nItems).padStart(2, '0')}`;
+      if (count) count.textContent = `${String(Math.min(n, Math.round(p * (n - 1)) + 1)).padStart(2, '0')} / ${String(n).padStart(2, '0')}`;
     }
   }
 
-  // Slides: one project per screen
   if (layout === 'slides' && window.innerWidth > 900) {
     const sec = document.querySelector<HTMLElement>('[data-slides]');
     if (sec) {
@@ -292,7 +225,6 @@ function onScroll() {
     }
   }
 
-  // Stack: earlier cards step back as the next one covers them
   if (layout === 'stack') {
     const cards = [...document.querySelectorAll<HTMLElement>('.st-card')];
     cards.forEach((c, i) => {
@@ -300,16 +232,14 @@ function onScroll() {
       if (!next) return c.style.setProperty('--cov', '0');
       const a = c.getBoundingClientRect();
       const b = next.getBoundingClientRect();
-      c.style.setProperty('--cov', String(clamp(1 - (b.top - a.top) / a.height).toFixed(3)));
+      c.style.setProperty('--cov', clamp(1 - (b.top - a.top) / a.height).toFixed(3));
     });
   }
 
-  // Index: when not hovering, follow the item nearest the middle
   if (layout === 'index' && !indexHover && window.innerWidth > 900) {
-    const items = [...document.querySelectorAll<HTMLElement>('.ix-list .p')];
-    let best = items[0];
+    let best: HTMLElement | null = null;
     let bestD = Infinity;
-    for (const it of items) {
+    for (const it of document.querySelectorAll<HTMLElement>('.ix-list .p')) {
       const r = it.getBoundingClientRect();
       const d = Math.abs(r.top + r.height / 2 - vh * 0.45);
       if (d < bestD) {
@@ -320,7 +250,6 @@ function onScroll() {
     if (best) setIndexActive(Number(best.dataset.ix));
   }
 
-  // Case study contents
   const toc = [...document.querySelectorAll<HTMLAnchorElement>('[data-toc]')];
   if (toc.length) {
     let id = toc[0].dataset.toc;
@@ -346,8 +275,7 @@ window.addEventListener('resize', () => {
 /* Index layout */
 function setIndexActive(i: number) {
   document.querySelectorAll<HTMLElement>('.ix-list .p').forEach((el) => (Number(el.dataset.ix) === i ? (el.dataset.active = '') : delete el.dataset.active));
-  const pics = document.querySelectorAll<HTMLElement>('.ix-pic');
-  pics.forEach((el, k) => (k === i ? (el.dataset.active = '') : delete el.dataset.active));
+  document.querySelectorAll<HTMLElement>('.ix-pic').forEach((el, k) => (k === i ? (el.dataset.active = '') : delete el.dataset.active));
   const cap = document.querySelector('[data-ix-caption]');
   const item = document.querySelector<HTMLElement>(`.ix-list .p[data-ix="${i}"]`);
   if (cap && item) cap.textContent = `${item.querySelector('.ix-title')?.textContent ?? ''} · ${item.querySelector('.lbl:last-child')?.textContent ?? ''}`;
@@ -363,31 +291,31 @@ document.querySelectorAll<HTMLElement>('.ix-list .p').forEach((el) => {
 });
 setIndexActive(0);
 
-/* Quiet layout: a small image follows the pointer */
+/* Quiet layout: a small image beside the pointer */
 const qFloat = document.querySelector<HTMLElement>('.q-float');
 if (qFloat && fine) {
   let tx = 0, ty = 0, cx = 0, cy = 0, active = -1, raf = 0;
   const pics = [...qFloat.querySelectorAll<HTMLElement>('.q-pic')];
   const loop = () => {
-    cx += (tx - cx) * 0.18;
-    cy += (ty - cy) * 0.18;
-    qFloat.style.setProperty('--qx', `${cx}px`);
-    qFloat.style.setProperty('--qy', `${cy}px`);
+    cx += (tx - cx) * 0.16;
+    cy += (ty - cy) * 0.16;
+    qFloat.style.setProperty('--qx', `${cx.toFixed(1)}px`);
+    qFloat.style.setProperty('--qy', `${cy.toFixed(1)}px`);
     raf = active >= 0 || Math.abs(tx - cx) > 0.5 ? requestAnimationFrame(loop) : 0;
   };
   document.querySelectorAll<HTMLElement>('.q-list .p').forEach((el) => {
     el.addEventListener('pointerenter', (e) => {
       active = Number(el.dataset.q);
       if (!raf) {
-        cx = tx = e.clientX + 28;
-        cy = ty = e.clientY - 110;
+        cx = tx = e.clientX + 32;
+        cy = ty = e.clientY - 120;
       }
       pics.forEach((p, k) => (k === active ? (p.dataset.on = '') : delete p.dataset.on));
       if (!raf) raf = requestAnimationFrame(loop);
     });
     el.addEventListener('pointermove', (e) => {
-      tx = e.clientX + 28;
-      ty = e.clientY - 110;
+      tx = e.clientX + 32;
+      ty = e.clientY - 120;
     });
     el.addEventListener('pointerleave', () => {
       active = -1;
@@ -396,9 +324,7 @@ if (qFloat && fine) {
   });
 }
 
-/* ------------------------------------------------------------------ */
-/* Navigation: island, full-screen menu                                */
-/* ------------------------------------------------------------------ */
+/* Navigation: island on touch, full-screen menu ------------------------- */
 const island = document.querySelector<HTMLElement>('[data-island]');
 island?.addEventListener('click', (e) => {
   if (!fine && !(e.target as HTMLElement).closest('.isl-links a')) {
@@ -419,14 +345,7 @@ document.querySelector('[data-menu-close]')?.addEventListener('click', () => set
 document.querySelectorAll('[data-menu-link]').forEach((a) => a.addEventListener('click', () => setMenu(false)));
 document.addEventListener('keydown', (e) => e.key === 'Escape' && setMenu(false));
 
-/* Roll links need a duplicated label */
-document.querySelectorAll<HTMLElement>('a.ln, button .ln').forEach((a) => {
-  if (a.querySelector('.roll') || a.children.length) return;
-  const t = a.textContent ?? '';
-  a.innerHTML = `<span class="roll"><span>${t}</span><span aria-hidden="true">${t}</span></span>`;
-});
-
-/* Copy email */
+/* Copy email ------------------------------------------------------------ */
 document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((b) =>
   b.addEventListener('click', async () => {
     const l = b.querySelector('[data-copy-label]');
@@ -440,58 +359,37 @@ document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((b) =>
   }),
 );
 
-/* ------------------------------------------------------------------ */
-/* Page transitions: remember where the click happened (Iris)          */
-/* ------------------------------------------------------------------ */
+/* Page transitions: remember the clicked card for Open ------------------- */
+const onScreen = (el: Element | null) => {
+  if (!el) return false;
+  const r = el.getBoundingClientRect();
+  return r.width > 0 && r.bottom > 0 && r.top < innerHeight;
+};
+/** The image a link visually belongs to, so Open can grow from it. */
+function frameFor(a: HTMLAnchorElement): HTMLElement | null {
+  if (a.closest('.ix-list')) return document.querySelector<HTMLElement>('.ix-pic[data-active]');
+  const own = a.closest('.p, .next-a')?.querySelector<HTMLElement>('.m');
+  if (onScreen(own ?? null)) return own!;
+  const href = a.getAttribute('href');
+  for (const el of document.querySelectorAll<HTMLElement>(`a[href="${href}"] .m`)) if (onScreen(el)) return el;
+  return null;
+}
+function rememberCard(a: HTMLAnchorElement) {
+  try {
+    const frame = frameFor(a);
+    if (!frame) return sessionStorage.removeItem('jb-vt-rect');
+    const r = frame.getBoundingClientRect();
+    const rad = parseFloat(getComputedStyle(frame).borderTopLeftRadius) || 0;
+    sessionStorage.setItem('jb-vt-rect', JSON.stringify({ t: r.top, l: r.left, r: r.right, b: r.bottom, rad }));
+  } catch {}
+}
 document.addEventListener('click', (e) => {
   const a = (e.target as HTMLElement).closest?.('a');
-  if (!a || a.target === '_blank' || !a.href.startsWith(location.origin) || a.hash && a.pathname === location.pathname) return;
-  try {
-    sessionStorage.setItem('jb-vt-point', JSON.stringify({ x: e.clientX, y: e.clientY }));
-  } catch {}
+  if (!a || a.target === '_blank' || !a.href.startsWith(location.origin) || (a.hash && a.pathname === location.pathname)) return;
+  rememberCard(a);
 });
 
-/* ------------------------------------------------------------------ */
-/* Arrival                                                             */
-/* ------------------------------------------------------------------ */
-function runIntro(force = false) {
-  const mode = cfg('intro');
-  document.querySelectorAll<HTMLElement>('.intro').forEach((el) => {
-    delete el.dataset.go;
-    delete el.dataset.set;
-    el.dataset.done = '';
-  });
-  if (mode === 'none' || reduce) return;
-  let seen = false;
-  try {
-    seen = sessionStorage.getItem('jb-intro') === '1';
-    sessionStorage.setItem('jb-intro', '1');
-  } catch {}
-  if (seen && !force) return;
-  const el = document.querySelector<HTMLElement>(`.intro--${mode}`);
-  if (!el) return;
-  delete el.dataset.done;
-  lenis?.stop();
-  setTimeout(() => (el.dataset.set = ''), 80);
-  setTimeout(() => (el.dataset.go = ''), mode === 'name' ? 1150 : 950);
-  el.addEventListener(
-    'animationend',
-    () => {
-      el.dataset.done = '';
-      lenis?.start();
-      setupReveal(true);
-    },
-    { once: true },
-  );
-}
-// Hide arrival screens before first paint if they've already been seen this session.
-try {
-  if (sessionStorage.getItem('jb-intro') === '1') document.querySelectorAll<HTMLElement>('.intro').forEach((el) => (el.dataset.done = ''));
-} catch {}
-
-/* ------------------------------------------------------------------ */
-/* Apply configuration                                                 */
-/* ------------------------------------------------------------------ */
+/* Apply configuration ----------------------------------------------------- */
 function apply(config: Config, changed?: string, preview = false) {
   for (const k of Object.keys(defaults)) if (config[k]) root.setAttribute(`data-${k}`, config[k]);
   if (!preview) {
@@ -499,66 +397,74 @@ function apply(config: Config, changed?: string, preview = false) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
     } catch {}
   }
-  if (!changed || ['type', 'hero', 'layout', 'reveal', 'nav'].includes(changed)) {
+  const all = !changed;
+  if (all || ['type', 'hero', 'layout', 'reveal', 'nav'].includes(changed!)) {
     requestAnimationFrame(() => {
       fitAll();
       setupReveal(true);
       requestScroll();
     });
   }
-  if (changed === 'scroll' || changed === 'motion') {
+  if (all || ['imgin', 'imgmotion', 'hover', 'images', 'palette', 'layout', 'case', 'hero'].includes(changed!)) {
+    requestAnimationFrame(() => syncImages(changed === 'imgin' || all));
+  }
+  if (all || changed === 'imgin' || changed === 'layout') setupUnveil(true);
+  if (all || changed === 'ambient' || changed === 'palette') syncDaylight();
+  if (all || changed === 'scroll' || changed === 'motion') {
     lenis?.destroy();
     lenis = null;
     setupScroll();
   }
-  if (changed === 'intro') runIntro(true);
   if (changed === 'layout' && !preview) document.getElementById('work')?.scrollIntoView({ block: 'start' });
   if (changed === 'layout' && preview) {
     const w = document.getElementById('work');
     if (w && w.getBoundingClientRect().top > window.innerHeight) w.scrollIntoView({ block: 'start' });
   }
-  if (changed === 'hero') window.scrollTo({ top: 0 });
+  if (changed === 'hero' && !preview) window.scrollTo({ top: 0 });
+  if ((changed === 'imgin' || changed === 'hover' || changed === 'imgmotion') && !preview && !document.querySelector('.case')) document.getElementById('work')?.scrollIntoView({ block: 'start' });
   if (changed === 'case' && !document.querySelector('.case')) {
     const first = document.querySelector<HTMLAnchorElement>('a[href^="/lab/p/work/"]');
     if (first) location.href = first.href;
   }
-  if ((changed === 'images' || changed === 'hover') && !preview) document.getElementById('work')?.scrollIntoView({ block: 'start' });
-  if (changed === 'progress' || changed === 'cursor') requestScroll();
 }
 
 window.addEventListener('message', (e) => {
   if (e.origin !== location.origin || !e.data || typeof e.data !== 'object') return;
   if (e.data.type === 'lab:config') apply(e.data.config, e.data.changed, !!e.data.preview);
+  if (e.data.type === 'lab:hour') setDaylightHour(e.data.hour);
   if (e.data.type === 'lab:try-transition') {
-    const onCase = !!document.querySelector('.case');
-    if (onCase) history.length > 1 ? history.back() : (location.href = '/lab/p');
-    else {
-      const first = [...document.querySelectorAll<HTMLAnchorElement>('a[href^="/lab/p/work/"]')].find((a) => a.offsetParent);
-      if (first) {
-        const r = first.getBoundingClientRect();
-        try {
-          sessionStorage.setItem('jb-vt-point', JSON.stringify({ x: r.left + r.width / 2, y: r.top + Math.min(r.height / 2, 200) }));
-        } catch {}
-        location.href = first.href;
-      }
+    if (document.querySelector('.case')) {
+      if (history.length > 1) history.back();
+      else location.href = '/lab/p';
+      return;
+    }
+    const links = [...document.querySelectorAll<HTMLAnchorElement>('a[href^="/lab/p/work/"]')].filter((a) => a.offsetParent);
+    const inView = links.find((a) => {
+      const r = a.getBoundingClientRect();
+      return r.bottom > 0 && r.top < innerHeight;
+    });
+    const first = inView ?? links[0];
+    if (first) {
+      rememberCard(first);
+      location.href = first.href;
     }
   }
 });
-
-// Tell the Studio which page is showing.
 if (window.parent !== window) window.parent.postMessage({ type: 'lab:page', path: location.pathname, title: document.title }, location.origin);
 
-/* ------------------------------------------------------------------ */
-/* Start                                                               */
-/* ------------------------------------------------------------------ */
+/* Start ---------------------------------------------------------------- */
 setupScroll();
 fitAll();
+setupReveal();
+setupUnveil();
+syncImages();
+syncDaylight();
+initPointer();
+initGlass();
+initScrub();
+requestScroll();
 document.fonts?.ready.then(() => {
   fitAll();
-  // Web fonts change line breaks; recompute line groups without replaying.
   if (cfg('reveal') === 'lines') document.querySelectorAll<HTMLElement>('[data-rv]').forEach((el) => el.offsetParent && assignLines(el));
   requestScroll();
 });
-setupReveal();
-runIntro();
-requestScroll();

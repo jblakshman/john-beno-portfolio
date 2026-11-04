@@ -1,20 +1,16 @@
 ---
 import '../../styles/lab/tokens.css';
-import { groups, presets, defaults } from '../../lab/options';
+import { groups, presets, defaults, sections } from '../../lab/options';
 
 const swatches: Record<string, [string, string, string]> = {
   paper: ['#fafaf8', '#121211', '#3434f5'],
-  ink: ['#0c0c0b', '#f2f1ed', '#a4a4ff'],
   bone: ['#eeebe4', '#1d1b16', '#56643a'],
-  fog: ['#e9ecef', '#0f1720', '#2a5bd7'],
   studio: ['#f5f5f7', '#1d1d1f', '#0a66d8'],
+  velvet: ['#ebe5de', '#2a292e', '#8a6b79'],
+  sage: ['#e3e8e0', '#17201a', '#2f5a3d'],
+  ink: ['#0c0c0b', '#f2f1ed', '#a4a4ff'],
   graphite: ['#000000', '#f5f5f7', '#0a84ff'],
   midnight: ['#0b1020', '#ece9e1', '#cdb07a'],
-  velvet: ['#ebe5de', '#2a292e', '#8a6b79'],
-  forest: ['#0f1a15', '#e6eee4', '#a6d18f'],
-  sage: ['#e3e8e0', '#17201a', '#2f5a3d'],
-  klein: ['#f7f7f3', '#0b0b0b', '#1f2bff'],
-  chalk: ['#ffffff', '#000000', '#000000'],
 };
 const specimen: Record<string, string> = {
   mona: "'Mona Sans Variable'",
@@ -22,20 +18,14 @@ const specimen: Record<string, string> = {
   gallery: "'Instrument Serif'",
   horology: "'Cormorant Garamond'",
   editorial: "'Newsreader Variable'",
-  technical: "'Geist Variable'",
   wide: "'Archivo Variable'",
-  soft: "'Fraunces Variable'",
-  expressive: "'Bricolage Grotesque Variable'",
-  artful: "'Syne Variable'",
 };
 const specimenVars: Record<string, string> = {
   wide: "font-variation-settings:'wdth' 125; font-weight: 640;",
-  soft: "font-variation-settings:'SOFT' 100, 'opsz' 72;",
-  expressive: "font-variation-settings:'opsz' 96;",
   horology: 'font-weight: 400;',
   gallery: 'font-weight: 400;',
 };
-const openByDefault = ['layout', 'hero', 'type', 'palette', 'pt'];
+const openByDefault = ['layout', 'pt', 'imgin', 'hover', 'ambient'];
 ---
 
 <!doctype html>
@@ -97,42 +87,60 @@ const openByDefault = ['layout', 'hero', 'type', 'palette', 'pt'];
 
         <div class="groups">
           {
-            groups.map((g) => (
-              <details class="group" data-group={g.id} open={openByDefault.includes(g.id)}>
-                <summary>
-                  <span class="g-label">{g.label}</span>
-                  <span class="g-value" data-value={g.id}>{g.options.find((o) => o.id === defaults[g.id])?.label}</span>
-                  {g.id === 'pt' && (
-                    <span class="g-try" role="button" tabindex="0" data-try>
-                      Try it
-                    </span>
-                  )}
-                </summary>
-                <p class="g-hint">{g.hint}</p>
-                <div class:list={['opts', `opts--${g.id}`]} role="radiogroup" aria-label={g.label}>
-                  {g.options.map((o) => (
-                    <label class="opt" title={o.note}>
-                      <input type="radio" name={g.id} value={o.id} checked={defaults[g.id] === o.id} />
-                      {g.id === 'palette' && (
-                        <span class="sw" aria-hidden="true" style={`--a:${swatches[o.id][0]};--b:${swatches[o.id][1]};--c:${swatches[o.id][2]}`}>
-                          <i />
-                          <i />
-                          <i />
-                        </span>
+            sections.map((sec) => (
+              <section class="sec" aria-label={sec}>
+                <h2 class="sec-title">{sec}</h2>
+                {groups
+                  .filter((g) => g.section === sec)
+                  .map((g) => (
+                    <details class="group" data-group={g.id} open={openByDefault.includes(g.id)}>
+                      <summary>
+                        <span class="g-label">{g.label}</span>
+                        <span class="g-value" data-value={g.id}>{g.options.find((o) => o.id === defaults[g.id])?.label}</span>
+                        {g.id === 'pt' && (
+                          <span class="g-try" role="button" tabindex="0" data-try>
+                            Try it
+                          </span>
+                        )}
+                      </summary>
+                      <p class="g-hint">{g.hint}</p>
+                      <div class:list={['opts', `opts--${g.id}`]} role="radiogroup" aria-label={g.label}>
+                        {g.options.map((o) => (
+                          <label class="opt" title={o.note}>
+                            <input type="radio" name={g.id} value={o.id} checked={defaults[g.id] === o.id} />
+                            {g.id === 'palette' && (
+                              <span class="sw" aria-hidden="true" style={`--a:${swatches[o.id][0]};--b:${swatches[o.id][1]};--c:${swatches[o.id][2]}`}>
+                                <i />
+                                <i />
+                                <i />
+                              </span>
+                            )}
+                            {g.id === 'type' && (
+                              <span class="spec" aria-hidden="true" style={`font-family:${specimen[o.id]};${specimenVars[o.id] ?? ''}`}>
+                                Aa
+                              </span>
+                            )}
+                            <span class="o-text">
+                              <span class="o-name">{o.label}</span>
+                              <span class="o-note">{o.note}</span>
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                      {g.id === 'ambient' && (
+                        <div class="hour">
+                          <label for="lab-hour">
+                            Time of day <output data-hour-out>now</output>
+                          </label>
+                          <input id="lab-hour" type="range" min="5" max="23.75" step="0.25" value="13" data-hour />
+                          <button type="button" class="btn" data-hour-now>
+                            Now
+                          </button>
+                        </div>
                       )}
-                      {g.id === 'type' && (
-                        <span class="spec" aria-hidden="true" style={`font-family:${specimen[o.id]};${specimenVars[o.id] ?? ''}`}>
-                          Aa
-                        </span>
-                      )}
-                      <span class="o-text">
-                        <span class="o-name">{o.label}</span>
-                        <span class="o-note">{o.note}</span>
-                      </span>
-                    </label>
+                    </details>
                   ))}
-                </div>
-              </details>
+              </section>
             ))
           }
         </div>
@@ -205,7 +213,15 @@ const openByDefault = ['layout', 'hero', 'type', 'palette', 'pt'];
   .preset small { color: var(--s-muted); font-size: 11px; line-height: 1.35; }
 
   .groups { overflow-y: auto; overscroll-behavior: contain; padding-bottom: 24px; scrollbar-width: thin; scrollbar-color: #333 transparent; }
-  .group { border-bottom: 1px solid var(--s-line); }
+  .sec-title { margin: 0; padding: 18px 16px 6px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--s-muted); }
+  .sec + .sec { border-top: 1px solid var(--s-line); margin-top: 6px; }
+  .group { border-bottom: 1px solid #1e1e1e; }
+  .sec .group:last-child { border-bottom: 0; }
+  .hour { display: none; grid-template-columns: 1fr auto; align-items: center; gap: 8px 10px; padding: 2px 20px 16px; color: var(--s-muted); font-size: 12px; }
+  .hour label { grid-column: 1 / -1; display: flex; justify-content: space-between; }
+  .hour output { color: var(--s-ink); font-variant-numeric: tabular-nums; }
+  .hour input { accent-color: #ededed; width: 100%; }
+  .group[data-group='ambient']:has(input[value='daylight']:checked) .hour { display: grid; }
   .group summary { display: flex; align-items: center; gap: 8px; padding: 13px 16px; cursor: pointer; list-style: none; user-select: none; }
   .group summary::-webkit-details-marker { display: none; }
   .group summary::before { content: ''; width: 6px; height: 6px; border-right: 1.5px solid var(--s-muted); border-bottom: 1.5px solid var(--s-muted); transform: rotate(-45deg); transition: transform 0.2s; margin-right: 4px; }

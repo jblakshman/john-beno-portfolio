@@ -42,14 +42,6 @@ const isCurrent = (href: string) => (href.includes('#') ? false : path === href)
     <button class="crn-btn" type="button" data-menu-open aria-expanded="false" aria-controls="lab-menu"><span class="ln">Menu</span></button>
   </div>
 
-  <!-- Split -->
-  <div class="nv nv--split wrap">
-    <a class="lbl lbl--ink ln" href={base}>{site.name}</a>
-    <span class="lbl">{site.role}</span>
-    <nav aria-label="Main"><ul role="list">{links.map((l) => <li><a class="lbl lbl--ink ln" href={l.href}>{l.label}</a></li>)}</ul></nav>
-    <span class="lbl">{site.location.city} · <time data-clock class="tab lbl--ink">--:--</time></span>
-    <button class="crn-btn nv-mbtn lbl lbl--ink" type="button" data-menu-open aria-expanded="false" aria-controls="lab-menu">Menu</button>
-  </div>
 </header>
 
 <div class="menu" id="lab-menu" hidden>

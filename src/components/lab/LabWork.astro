@@ -160,50 +160,6 @@ const semester = (p: CollectionEntry<'work'>) => p.data.context.split('·')[0].t
     </div>
   </section>
 
-  <!-- 7 Strips -->
-  <section class="L L-strips wrap" aria-label="Selected work">
-    <div class="sec-head"><h2 class="lbl lbl--ink">Selected work</h2><span class="lbl tab">({total})</span></div>
-    <div class="sp-box ps">
-      {
-        projects.map((p, i) => (
-          <a class="p sp" href={href(p)} data-open={i === 0 ? '' : undefined} data-cur={cta(p)}>
-            <Cover project={p} class="sp-media" sizes="100vw" eager={i === 0} />
-            <span class="sp-in">
-              <span class="lbl tab">{n(i)} · {p.data.context}</span>
-              <span class="d sp-title">{p.data.title}</span>
-              <span class="sp-sum">{p.data.summary}</span>
-            </span>
-          </a>
-        ))
-      }
-    </div>
-  </section>
-
-  <!-- 8 Blueprint -->
-  <section class="L L-blueprint wrap" aria-label="Selected work">
-    <div class="bp-head">
-      <h2 class="lbl lbl--ink">Sheet 01 — Selected work</h2>
-      <span class="lbl">{projects.length} items · dimensions in px</span>
-    </div>
-    <div class="bp-grid ps">
-      {
-        projects.map((p, i) => (
-          <a class="p bp-cell" href={href(p)} data-cur={cta(p)}>
-            <span class="bp-id lbl">{String.fromCharCode(65 + Math.floor(i / 2))}{(i % 2) + 1}</span>
-            <span class="bp-dim lbl" aria-hidden="true"><span class="tab">{p.data.cover.width} × {p.data.cover.height}</span></span>
-            <Cover project={p} class="bp-media" sizes="(min-width: 900px) 46vw, 100vw" eager={i < 2} />
-            <dl class="bp-spec">
-              <div><dt class="lbl">Project</dt><dd class="d">{p.data.title}</dd></div>
-              <div><dt class="lbl">Context</dt><dd>{p.data.context}</dd></div>
-              <div><dt class="lbl">Disciplines</dt><dd>{p.data.disciplines.join(', ')}</dd></div>
-              <div><dt class="lbl">Tools</dt><dd>{p.data.tools.join(', ')}</dd></div>
-            </dl>
-          </a>
-        ))
-      }
-    </div>
-  </section>
-
   <!-- 9 Gallery -->
   <section class="L L-gallery wrap" aria-label="Selected work">
     <div class="sec-head"><h2 class="lbl lbl--ink">Selected work</h2><span class="lbl tab">({total})</span></div>

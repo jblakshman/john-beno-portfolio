@@ -1,6 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
-import { Picture } from 'astro:assets';
+import { Picture, getImage } from 'astro:assets';
+import scrubPoster from '../../../../assets/work/tactical-haptic-twin/scrub-poster.jpg';
 import LabPreview from '../../../../layouts/LabPreview.astro';
 
 export async function getStaticPaths() {
@@ -17,6 +18,7 @@ const meta = [
   { k: 'Context', v: d.context },
 ];
 const vt = `--vt: w-${project.id}`;
+const scrubPosterUrl = (await getImage({ src: scrubPoster, width: 1040, format: 'webp', quality: 75 })).src;
 const pic = (sizes: string, cls = 'fill') => ({ src: d.cover, alt: d.coverAlt, formats: ['avif', 'webp'] as ('avif' | 'webp')[], fallbackFormat: 'jpg' as const, widths: [800, 1200, 1600, 2200], sizes, loading: 'eager' as const, class: cls });
 ---
 
@@ -55,6 +57,24 @@ const pic = (sizes: string, cls = 'fill') => ({ src: d.cover, alt: d.coverAlt, f
       <div class="m ce-hero" data-vt style={vt}><Picture {...pic('(min-width: 900px) 80vw, 100vw')} /></div>
       <p class="lbl ce-credit">Tools: {d.tools.join(', ')}{d.liveUrl && <> · <a class="ln" href={d.liveUrl} target="_blank" rel="noopener">{d.liveLabel ?? 'See it live'} ↗</a></>}</p>
     </header>
+
+    {
+      project.id === 'tactical-haptic-twin' && (
+        <section class="scrub" data-scrub aria-label="Prototype walkthrough">
+          <div class="scrub-sticky wrap">
+            <div class="scrub-frame">
+              <video src="/media/tactical-haptic-twin-scrub.mp4" poster={scrubPosterUrl} muted playsinline preload="auto" aria-label="Prototype recording of the AR layer on the table, controlled by scrolling" />
+            </div>
+            <ol class="scrub-caps" role="list">
+              <li data-from="0" data-to="0.34"><span class="lbl tab">01 / 03</span><p class="d">The physical model is the stage: terrain and buildings you can touch.</p></li>
+              <li data-from="0.34" data-to="0.68"><span class="lbl tab">02 / 03</span><p class="d">The AR layer adds what moves: units, routes and live data.</p></li>
+              <li data-from="0.68" data-to="1.01"><span class="lbl tab">03 / 03</span><p class="d">Commanders act on the table, and the digital twin follows.</p></li>
+            </ol>
+            <div class="scrub-bar" data-scrub-bar aria-hidden="true"><i></i></div>
+          </div>
+        </section>
+      )
+    }
 
     <div class="case-body wrap grid">
       <aside class="case-toc" aria-label="On this page">

@@ -35,42 +35,39 @@ const { title, footer = true } = Astro.props;
       } catch (e) {}
       var r = document.documentElement;
       for (var k in defaults) r.setAttribute('data-' + k, c[k]);
+      // Where the clicked card was, for the Open transition.
       try {
-        var p = JSON.parse(sessionStorage.getItem('jb-vt-point') || 'null');
-        if (p) { r.style.setProperty('--vt-x', p.x + 'px'); r.style.setProperty('--vt-y', p.y + 'px'); sessionStorage.removeItem('jb-vt-point'); }
+        var o = JSON.parse(sessionStorage.getItem('jb-vt-rect') || 'null');
+        if (o) {
+          var W = innerWidth, H = innerHeight;
+          r.style.setProperty('--o-t', Math.max(0, o.t) + 'px');
+          r.style.setProperty('--o-l', Math.max(0, o.l) + 'px');
+          r.style.setProperty('--o-r', Math.max(0, W - o.r) + 'px');
+          r.style.setProperty('--o-b', Math.max(0, H - o.b) + 'px');
+          r.style.setProperty('--o-rad', (o.rad || 0) + 'px');
+          r.style.setProperty('--o-cx', ((o.l + o.r) / 2) + 'px');
+          r.style.setProperty('--o-cy', ((o.t + o.b) / 2) + 'px');
+        }
       } catch (e) {}
-      // Direction for the Push transition.
+      // Direction for Push and Open.
       window.addEventListener('pagereveal', function (e) {
         if (!e.viewTransition) return;
-        if (r.dataset.pt === 'none') { e.viewTransition.skipTransition(); return; }
         try {
           var a = navigation.activation;
           if (a && a.navigationType === 'traverse' && a.from && a.entry && a.from.index > a.entry.index) r.dataset.dir = 'back';
-          e.viewTransition.finished.finally(function () { delete r.dataset.dir; });
-        } catch (err) {}
-      });
-      window.addEventListener('pageswap', function (e) {
-        if (e.viewTransition && r.dataset.pt === 'none') e.viewTransition.skipTransition();
-        try {
-          if (e.viewTransition && navigation.activation && e.activation && e.activation.navigationType === 'traverse' && e.activation.entry.index < navigation.currentEntry.index) r.dataset.dir = 'back';
+          e.viewTransition.finished.then(function () { delete r.dataset.dir; }, function () { delete r.dataset.dir; });
         } catch (err) {}
       });
     </script>
   </head>
   <body>
-    <div class="intro intro--name" aria-hidden="true"><p class="d"><span class="ic-w">{site.name}</span></p></div>
-    <div class="intro intro--curtain" aria-hidden="true">
-      <div class="ic"><p class="d" style="font-size: var(--t-xl)">{site.name}</p><p class="lbl">{site.location.city} · <time data-clock class="tab">--:--</time></p></div>
-    </div>
     <LabNav />
     <main id="main"><slot /></main>
     {footer && <LabFooter />}
-    <div class="prog prog--bar" aria-hidden="true"></div>
-    <div class="prog prog--ruler" aria-hidden="true"></div>
-    <div class="prog prog--counter lbl" aria-hidden="true"><span data-counter-n class="tab">01</span><b data-counter-t>Introduction</b></div>
     <div class="cur cur--label" aria-hidden="true"><span></span></div>
-    <div class="cur cur--dot" aria-hidden="true"><i></i></div>
+    <div class="ptr" aria-hidden="true"><span></span></div>
     <div class="grain" aria-hidden="true"></div>
+    <canvas class="daylight" aria-hidden="true"></canvas>
     <script>
       import '../lab/runtime.ts';
     </script>

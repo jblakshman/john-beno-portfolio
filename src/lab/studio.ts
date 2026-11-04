@@ -71,7 +71,7 @@ document.querySelectorAll<HTMLInputElement>('.opt input').forEach((input) =>
 );
 
 // Hover an option to preview it; leaving the list restores the saved choice.
-const noHoverPreview = new Set(['pt', 'intro', 'case', 'scroll']);
+const noHoverPreview = new Set(['pt', 'case', 'scroll', 'imgin']);
 let hoverTimer = 0;
 let previewing = false;
 document.querySelectorAll<HTMLElement>('.opts').forEach((list) => {
@@ -115,9 +115,8 @@ document.querySelector('[data-shuffle]')?.addEventListener('click', () => {
   const next: Config = {};
   for (const g of groups) next[g.id] = pick(g.options).id;
   // Keep a few calm defaults so a shuffle stays usable.
-  next.intro = 'none';
-  next.grain = Math.random() < 0.2 ? 'on' : 'off';
-  next.images = Math.random() < 0.2 ? 'mono' : 'color';
+  next.images = Math.random() < 0.25 ? 'mono' : 'color';
+  next.ambient = Math.random() < 0.5 ? next.ambient : 'none';
   config = sanitize(next);
   save();
   syncPanel();
@@ -193,6 +192,19 @@ document.querySelectorAll<HTMLDetailsElement>('details[data-group]').forEach((d)
     } catch {}
   }),
 );
+
+// Daylight time of day
+const hour = document.querySelector<HTMLInputElement>('[data-hour]');
+const hourOut = document.querySelector<HTMLOutputElement>('[data-hour-out]');
+hour?.addEventListener('input', () => {
+  const h = Number(hour.value);
+  if (hourOut) hourOut.textContent = `${String(Math.floor(h)).padStart(2, '0')}:${String(Math.round((h % 1) * 60)).padStart(2, '0')}`;
+  frame.contentWindow?.postMessage({ type: 'lab:hour', hour: h }, location.origin);
+});
+document.querySelector('[data-hour-now]')?.addEventListener('click', () => {
+  if (hourOut) hourOut.textContent = 'now';
+  frame.contentWindow?.postMessage({ type: 'lab:hour', hour: null }, location.origin);
+});
 
 // Messages from the preview
 window.addEventListener('message', (e) => {
