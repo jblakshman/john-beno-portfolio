@@ -1,0 +1,121 @@
+---
+/**
+ * Interactive illustration of the Tactical Haptic Twin: a shape display
+ * forms the district, the AR layer adds fire, routes and units, and a token
+ * placed on the table sends a unit. Plays through on its own while in view;
+ * the steps can be chosen, and the model can be turned by dragging.
+ */
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { dataW, type Width } from './width';
+import '../../styles/site/blocks.css';
+
+interface Props {
+  /** Shown while the model loads, and where WebGL is not available (transparent PNGs). */
+  poster: ImageMetadata;
+  posterDark?: ImageMetadata;
+  steps?: string[];
+  caption?: string;
+  w?: Width;
+}
+const {
+  poster,
+  posterDark,
+  steps = [
+    'The table is a shape-shifting surface, ready to become any district.',
+    'It forms the city: terrain and buildings you can touch.',
+    'The AR layer adds what moves: the fire spreading, routes and units.',
+    'A token placed on the table sends a unit, and the digital twin follows.',
+  ],
+  caption,
+  w = 'wide',
+} = Astro.props;
+const still = async (img: ImageMetadata) => (await getImage({ src: img, width: Math.min(img.width, 2000), format: 'webp', quality: 80 })).src;
+const posterUrl = await still(poster);
+const posterDarkUrl = posterDark ? await still(posterDark) : undefined;
+const durations = [4.5, 5.5, 7, 7];
+---
+
+<figure class="blk ht" data-w={dataW(w)} data-nogl data-table aria-label="Interactive illustration of the Tactical Haptic Twin">
+  <div class="ht-stage">
+    <img class:list={['ht-poster', { 'ht-poster--light': posterDarkUrl }]} src={posterUrl} alt="" loading="lazy" decoding="async" />
+    {posterDarkUrl && <img class="ht-poster ht-poster--dark" src={posterDarkUrl} alt="" loading="lazy" decoding="async" />}
+    <canvas aria-hidden="true"></canvas>
+    <div class="ht-labels" data-labels aria-hidden="true"></div>
+    <p class="ht-hint" aria-hidden="true">Drag to turn</p>
+    <p class="ht-kind">Illustration of the concept</p>
+  </div>
+  <ol class="ht-steps" role="list">
+    {
+      steps.map((s, i) => (
+        <li>
+          <button type="button" data-step={i} aria-pressed={i === 0 ? 'true' : 'false'} style={`--step:${durations[i] ?? 6}s`}>
+            <i class="ht-bar" aria-hidden="true" />
+            <span class="ht-n tab">{String(i + 1).padStart(2, '0')}</span>
+            <span>{s}</span>
+          </button>
+        </li>
+      ))
+    }
+  </ol>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<script>
+  /* Loads the 3D model only when the block comes near the screen. */
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll<HTMLElement>('[data-table]').forEach((fig) => {
+    const buttons = [...fig.querySelectorAll<HTMLButtonElement>('[data-step]')];
+    let api: { setStage: (s: number) => void } | null = null;
+    let current = 0;
+    const select = (i: number) => {
+      current = i;
+      buttons.forEach((b, k) => b.setAttribute('aria-pressed', String(k === i)));
+      api?.setStage(i);
+    };
+    buttons.forEach((b, i) =>
+      b.addEventListener('click', () => {
+        fig.dataset.manual = '';
+        select(i);
+      }),
+    );
+    // The progress bar under the active step drives the autoplay.
+    fig.addEventListener('animationend', (e) => {
+      if (!(e.target as HTMLElement).classList.contains('ht-bar') || fig.hasAttribute('data-manual')) return;
+      select((current + 1) % buttons.length);
+    });
+    if (reduce) {
+      fig.dataset.manual = '';
+      select(2);
+    }
+    // Lite (save data, modest device): the rendered still and the steps, no 3D.
+    if (document.documentElement.hasAttribute('data-lite')) {
+      fig.dataset.fallback = '';
+      fig.dataset.manual = '';
+      return;
+    }
+    const near = new IntersectionObserver(
+      async ([e]) => {
+        if (!e.isIntersecting) return;
+        near.disconnect();
+        try {
+          const { mountTable } = await import('../../design/gl/table');
+          api = mountTable(fig);
+        } catch (err) {
+          console.error('Haptic table could not start:', err);
+          api = null;
+        }
+        if (!api) {
+          fig.dataset.fallback = '';
+          return;
+        }
+        fig.dataset.ready = '';
+        api.setStage(current);
+      },
+      { rootMargin: '400px 0px' },
+    );
+    near.observe(fig);
+    // Autoplay only runs while the block is on screen.
+    new IntersectionObserver(([e]) => (e.isIntersecting ? delete fig.dataset.paused : (fig.dataset.paused = '')), { threshold: 0.35 }).observe(fig);
+  });
+</script>

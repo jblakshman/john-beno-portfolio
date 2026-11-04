@@ -13,6 +13,9 @@ status: in-progress
 ---
 import Video from '../../components/blocks/Video.astro';
 import Scrub from '../../components/blocks/Scrub.astro';
+import HapticTable from '../../components/blocks/HapticTable.astro';
+import tablePoster from '../../assets/work/tactical-haptic-twin/table-poster.png';
+import tablePosterDark from '../../assets/work/tactical-haptic-twin/table-poster-dark.png';
 import demoPoster from '../../assets/work/tactical-haptic-twin/demo-poster.jpg';
 import scrubPoster from '../../assets/work/tactical-haptic-twin/scrub-poster.jpg';
 
@@ -32,6 +35,8 @@ import scrubPoster from '../../assets/work/tactical-haptic-twin/scrub-poster.jpg
 For this project, I focused on the intersection of physical presence and digital intelligence to create a future-forward command concept for the fire department. I wanted to move beyond the limitations of flat screens and purely virtual data to create a system that feels grounded and intuitive. I call this concept the Tactical Haptic Twin.
 
 The core idea is to merge a physical, shape-shifting 3D map of the city with an augmented reality digital twin. In this hybrid setup, the physical model acts as the stage, providing a tangible, stable anchor for infrastructure and terrain, while the AR layer acts as the actors, visualizing dynamic real-time data like fire spread, smoke flow and unit positions.
+
+<HapticTable poster={tablePoster} posterDark={tablePosterDark} />
 
 <Video
   src="/media/tactical-haptic-twin-demo.mp4"
