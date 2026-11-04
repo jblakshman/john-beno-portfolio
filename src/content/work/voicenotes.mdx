@@ -1,0 +1,79 @@
+---
+title: Voice Notes
+summary: Redesigning Apple’s Voice Memos for musicians who use it as an audio sketchbook, without losing its simplicity.
+description: Voice Notes, a UX redesign of Apple Voice Memos by John Beno Lakshman. Smart naming, tags, pins and color coding help musicians organize hundreds of recorded ideas.
+order: 3
+disciplines: [UI & UX]
+tools: [Figma, ProtoPie]
+context: Semester 2 · University project
+cover: ../../assets/work/voicenotes/cover.png
+coverAlt: Two iPhones on a concrete ledge showing the redesigned Voice Notes app with color-coded recordings.
+liveUrl: https://drive.google.com/file/d/1K7bhfXdBWBIIM0OQTzuEQLbfQgrVvCLc/view?usp=sharing
+liveLabel: Watch the prototype
+---
+import Figure from '../../components/Figure.astro';
+import Gallery from '../../components/Gallery.astro';
+import originalList from '../../assets/work/voicenotes/original-list.png';
+import redesignedList from '../../assets/work/voicenotes/redesigned-list.png';
+import recording from '../../assets/work/voicenotes/recording.png';
+import naming from '../../assets/work/voicenotes/naming-prompt.png';
+import colors from '../../assets/work/voicenotes/color-coding.png';
+import pins from '../../assets/work/voicenotes/pins.png';
+
+## Brief
+
+The task was to take an app or website I use often and redesign it based on real usability or UX issues that affect everyday use.
+
+I chose Apple’s Voice Memos, which I and many musicians I know use all the time as an audio sketchbook for ideas, melodies and improvisations. The app is simple and reliable, but it has frustrating limits when it comes to organizing recordings, especially once you have collected dozens or even hundreds of them.
+
+<Gallery>
+  <Figure src={originalList} alt="The original Voice Memos list, where every recording is named Neue Aufnahme followed by a number." caption="Before: every recording is called “New Recording” plus a number." />
+  <Figure src={redesignedList} alt="The redesigned list with named recordings in soft blue, yellow, green and purple color blocks." caption="After: named, color-coded recordings." />
+</Gallery>
+
+## Idea
+
+My goal was to preserve the minimalism that makes Voice Memos so convenient, while adding lightweight features that significantly improve usability for musicians who rely on it as a creative tool. Through user research with friends who are musicians and music producers, I found two big takeaways.
+
+Everyone shared the same core frustration: no structure or organization, mainly because every recording is automatically named “New Recording” and gets lost in the list.
+
+At the same time, needs varied a lot. Some people just wanted to capture ideas fast, while others wished for more advanced tools. That made it clear I had to stay focused on the main problems and avoid turning the app into bloated software.
+
+## Process
+
+After benchmarking seven other audio recording apps, I noticed that the ones with the most features often felt cluttered and hard to use. So I narrowed it down to a few high-impact features that solve the core problems without overwhelming the user.
+
+### Smart naming prompt
+
+Right after a recording is saved, the user is prompted to type or dictate a quick name. In usability testing, this small step dramatically reduced the number of poorly named recordings.
+
+<Figure src={naming} alt="Naming prompt with the keyboard open, asking for the recording's name right after it is saved." />
+
+### Tags
+
+Recordings can be tagged with descriptive labels like #vocal, #riff or #verse and filtered later. This adds a searchable layer of meaning beyond file names.
+
+### Pins
+
+Long recordings, such as improvised sessions, often have just a few moments worth remembering. With pins, users can mark important timestamps while recording and jump back to those moments later.
+
+<Gallery>
+  <Figure src={recording} alt="Recording screen with a live waveform and a pin button next to the stop button." />
+  <Figure src={pins} alt="Two playback cards for a melody improvisation, with pins marking moments on the timeline." />
+</Gallery>
+
+### Color coding
+
+Users can assign colors to their recordings, a subtle but powerful way to group related files, such as all recordings for the same track. Combined with tags, this made navigation much more intuitive.
+
+<Figure src={colors} alt="Tilted iPhone showing the color-coded list with one recording expanded into a player with pins and tags." />
+
+### Visual design
+
+I deliberately kept the aesthetics close to Apple’s native style: clean, touch-friendly and quiet. The new color-coded blocks are separated by generous white space, giving the interface a light, almost floating feel under the fingers.
+
+All interaction flows were prototyped in ProtoPie and the UI was designed in Figma. I focused on smooth microinteractions and a clear hierarchy to avoid visual or cognitive overload.
+
+## Reflection
+
+This project let me work on a tool I already knew well as a user, which meant balancing my personal frustrations with actual design discipline. It was tempting to add a few features I wanted, but user interviews kept me grounded and helped me build something that feels genuinely helpful without being overdesigned. I learned that even simple changes can make a big difference if they are placed carefully in the flow.

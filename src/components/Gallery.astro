@@ -1,0 +1,17 @@
+---
+/** Lays out two or more figures side by side; stacks on narrow screens. */
+---
+
+<div class="gallery"><slot /></div>
+
+<style>
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    gap: var(--gap);
+    margin-block: clamp(28px, 4vw, 48px);
+  }
+  .gallery :global(.figure) {
+    margin: 0;
+  }
+</style>

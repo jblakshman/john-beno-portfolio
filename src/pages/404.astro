@@ -1,0 +1,58 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Page not found" description="This page doesn’t exist." noindex>
+  <section class="nf">
+    <div class="nf-stage" data-experiment="pin-table" data-mode="full" style="--hue:#ff6a3d" aria-hidden="true"></div>
+    <div class="nf-text wrap">
+      <p class="label">404</p>
+      <h1>This page wandered off.</h1>
+      <p class="muted">It may have moved, or the link has a typo.</p>
+      <p class="actions">
+        <a class="pill pill--solid" href="/">Go to the homepage</a>
+        <a class="pill" href="/playground">Visit the playground</a>
+      </p>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import '../scripts/experiments.ts';
+</script>
+
+<style>
+  .nf {
+    position: relative;
+    min-height: 88svh;
+    display: grid;
+    align-items: end;
+    overflow: hidden;
+  }
+  .nf-stage {
+    position: absolute;
+    inset: 0;
+    opacity: 0.9;
+  }
+  .nf-text {
+    position: relative;
+    display: grid;
+    gap: 14px;
+    padding-bottom: 48px;
+    pointer-events: none;
+  }
+  .nf-text a {
+    pointer-events: auto;
+  }
+  h1 {
+    font-size: var(--t-2xl);
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+    max-width: 12ch;
+  }
+  .actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+</style>

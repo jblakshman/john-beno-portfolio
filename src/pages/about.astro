@@ -1,0 +1,356 @@
+---
+import { Picture, getImage } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import { site } from '../site.config';
+import { graph, person, personId, website } from '../lib/schema';
+import portrait from '../assets/about/portrait-arms-crossed.jpg';
+import portraitStanding from '../assets/about/portrait-standing.jpg';
+
+const portraitSchema = await getImage({ src: portraitStanding, width: 800, format: 'jpg' });
+const jsonLd = graph(
+  {
+    '@type': 'ProfilePage',
+    '@id': `${site.url}/about#profile`,
+    url: `${site.url}/about`,
+    name: `About ${site.name}`,
+    mainEntity: { '@id': personId },
+    isPartOf: { '@id': `${site.url}/#website` },
+  },
+  person(new URL(portraitSchema.src, site.url).href),
+  website(),
+);
+
+const sections = [
+  { id: 'intro', label: 'Intro' },
+  { id: 'approach', label: 'Approach' },
+  { id: 'ai', label: 'On AI' },
+  { id: 'interests', label: 'Interests' },
+  { id: 'education', label: 'Education' },
+  { id: 'skills', label: 'Skills & tools' },
+];
+
+const education = [
+  { when: '10/2022 – today', what: 'B.Sc. Computer Science and Design', where: 'Hochschule München University of Applied Sciences' },
+  { when: '10/2021 – 09/2022', what: 'B.Sc. Electrical Engineering and Information Technology', where: 'Technical University of Munich' },
+  { when: '09/2012 – 07/2021', what: 'Abitur', where: 'Rupprecht-Gymnasium München' },
+  { when: '02/2011 – 02/2019', what: 'Tamil language and culture', where: 'Tamil Education Service of Germany' },
+];
+
+const skills = [
+  'UI/UX design & prototyping',
+  'User research & usability testing',
+  'User-centered design thinking',
+  'Visual communication',
+  'Content creation',
+];
+const tools = ['Figma', 'ProtoPie', 'Spline', 'Unity', 'Reality Composer', 'Ableton Live', 'DaVinci Resolve', 'Illustrator', 'Affinity Photo', 'Wix Studio'];
+const interests = ['UI & UX design', 'Photography', 'Videography', 'Music'];
+---
+
+<Base
+  title="About"
+  description={`About ${site.name}: a computer science and design student in Munich who works across UX/UI, interaction, photography, video and music.`}
+  ogType="profile"
+  jsonLd={jsonLd}
+>
+  <div class="about wrap grid">
+    <aside class="side" aria-label="Sections">
+      <ol role="list">
+        {
+          sections.map((s) => (
+            <li>
+              <a href={`#${s.id}`} data-toc-link={s.id}>
+                {s.label}
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </aside>
+
+    <div class="content">
+      <section id="intro" class="block intro">
+        <p class="label">About</p>
+        <h1 class="about-title rise">{site.name}</h1>
+        <div class="intro-grid">
+          <div class="intro-text">
+            <p class="lead rise" style="--i:1">
+              I study Computer Science &amp; Design at the University of Applied Sciences Munich and approach design as a way to create work that
+              feels considered and makes sense. What matters to me is not just how something looks, but how it feels, how it flows and how it fits
+              into its context.
+            </p>
+            <p>
+              Alongside design, I am active in photography, videography and music production. These creative fields influence the way I think and
+              push me to approach projects from different angles.
+            </p>
+            <p>
+              I like working hands-on and trying things out, even without knowing exactly where they will lead. For me, experimentation is less
+              about chasing results and more about staying curious. Even when something doesn’t work, it usually opens the door to something that
+              does.
+            </p>
+            <p class="intro-links">
+              <a class="pill pill--solid" href={site.cv} target="_blank" rel="noopener">Download CV <span class="arrow arrow--ne" aria-hidden="true">↗</span></a>
+              <a class="pill" href="#contact">Get in touch</a>
+            </p>
+          </div>
+          <figure class="portrait frame rise" style="--i:2">
+            <Picture
+              src={portrait}
+              alt={`Black and white portrait of ${site.name} with arms crossed, standing in front of a historic building.`}
+              formats={['avif', 'webp']} fallbackFormat="jpg"
+              widths={[400, 700, 1000]}
+              sizes="(min-width: 900px) 28vw, 100vw"
+              loading="eager"
+            />
+          </figure>
+        </div>
+      </section>
+
+      <section id="approach" class="block">
+        <h2 class="block-title">Approach</h2>
+        <div class="text">
+          <p>
+            For me, good design begins with close observation. I take time to understand a problem by looking at it directly and in context. From
+            there, I try to connect it with similar patterns from other areas of life, even if they seem unrelated at first. Ideas from different
+            disciplines often open up unexpected directions.
+          </p>
+          <p>
+            Benchmarking and research help define the landscape, but real progress often comes from shifting perspective and questioning
+            assumptions. Once different paths have been explored, I focus on identifying the core issues worth solving and stay grounded in what is
+            feasible and meaningful.
+          </p>
+          <p>
+            I work iteratively, with regular feedback and testing, to avoid tunnel vision and keep the outcome relevant. Whether I work alone or in a
+            team, the goal is always to create something that not only works but also feels intentional and well placed in its context. It should
+            last, adapt and hold up over time.
+          </p>
+        </div>
+      </section>
+
+      <section id="ai" class="block">
+        <h2 class="block-title">On AI</h2>
+        <div class="text">
+          <p>
+            AI is impressive at speeding up workflows and creating options, but most outputs stay within familiar ground. Models are trained on
+            existing data, much of which follows common rules, templates and guidelines. That makes results look polished, but they rarely feel
+            unexpected or deeply personal.
+          </p>
+          <p>
+            What makes design meaningful to me is its ability to connect emotionally and respond to a specific context. That kind of connection comes
+            from human insight, intuition and experience, which are hard to replicate with patterns alone.
+          </p>
+          <p>
+            I mainly use AI to move my ideas into reality faster. My concepts and direction always come first, and AI helps me get from a thought to
+            a workable version more efficiently. When I prototype in code, AI takes care of the technical details so I can stay focused on the idea
+            itself and go straight into iterating, refining and exploring what it could become.
+          </p>
+          <p>
+            AI helps me move forward, but it does not replace the creative process. I see it as a supportive tool that accelerates experimentation
+            and opens space for deeper thinking, without ever taking over the part that matters most: the idea itself.
+          </p>
+        </div>
+      </section>
+
+      <section id="interests" class="block">
+        <h2 class="block-title">Interests</h2>
+        <ul class="interests" role="list">
+          {interests.map((i) => <li>{i}</li>)}
+        </ul>
+      </section>
+
+      <section id="education" class="block">
+        <h2 class="block-title">Education</h2>
+        <ol class="timeline" role="list">
+          {
+            education.map((e) => (
+              <li>
+                <span class="label tabular">{e.when}</span>
+                <span class="tl-what">{e.what}</span>
+                <span class="tl-where">{e.where}</span>
+              </li>
+            ))
+          }
+        </ol>
+      </section>
+
+      <section id="skills" class="block">
+        <h2 class="block-title">Skills &amp; tools</h2>
+        <div class="cols">
+          <div>
+            <p class="label">Skills</p>
+            <ul role="list" class="plain">{skills.map((s) => <li>{s}</li>)}</ul>
+          </div>
+          <div>
+            <p class="label">Tools</p>
+            <ul role="list" class="plain">{tools.map((s) => <li>{s}</li>)}</ul>
+          </div>
+          <div>
+            <p class="label">Languages</p>
+            <ul role="list" class="plain">
+              {site.languages.map((l) => <li>{l.name}{'native' in l && <span class="muted" lang={l.code}> · {l.native}</span>}</li>)}
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .about {
+    padding-top: calc(var(--header-h) + clamp(48px, 8vw, 120px));
+    row-gap: 32px;
+    align-items: start;
+  }
+  .side {
+    grid-column: 1 / span 2;
+    position: sticky;
+    top: calc(var(--header-h) + 32px);
+    font-size: var(--t-sm);
+  }
+  .side ol {
+    display: grid;
+    gap: 2px;
+  }
+  .side a {
+    color: var(--muted);
+    transition: color 0.25s var(--ease);
+  }
+  .side a:hover,
+  .side a[data-active] {
+    color: var(--ink);
+  }
+  .content {
+    grid-column: 3 / -1;
+    min-width: 0;
+  }
+  .block + .block {
+    margin-top: clamp(72px, 10vw, 140px);
+  }
+  .block {
+    scroll-margin-top: calc(var(--header-h) + 32px);
+  }
+  .about-title {
+    margin-top: 12px;
+    font-size: var(--t-display);
+    line-height: 0.86;
+    letter-spacing: -0.055em;
+    font-weight: 600;
+    font-variation-settings: 'wdth' 104;
+    margin-left: -0.04em;
+  }
+  .intro-grid {
+    margin-top: clamp(32px, 5vw, 64px);
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: clamp(24px, 4vw, 64px);
+    align-items: start;
+  }
+  .intro-text {
+    display: grid;
+    gap: 1em;
+    font-size: var(--t-md);
+    max-width: 58ch;
+  }
+  .lead {
+    font-size: var(--t-lg);
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+  }
+  .intro-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .portrait {
+    aspect-ratio: 3 / 4;
+  }
+  .portrait :global(img) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .block-title {
+    font-size: var(--t-xl);
+    letter-spacing: -0.035em;
+    line-height: 1;
+    font-weight: 560;
+    margin-bottom: 28px;
+  }
+  .text {
+    display: grid;
+    gap: 1em;
+    font-size: var(--t-md);
+    max-width: 62ch;
+  }
+  .interests {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 0;
+    font-size: var(--t-2xl);
+    font-weight: 540;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+  }
+  .interests li:not(:last-child)::after {
+    content: ',';
+    margin-right: 0.3em;
+    color: var(--muted);
+  }
+  .timeline {
+    border-top: 1px solid var(--line);
+  }
+  .timeline li {
+    display: grid;
+    grid-template-columns: minmax(130px, 1fr) minmax(0, 2fr) minmax(0, 2fr);
+    gap: 4px var(--gap);
+    padding-block: 16px;
+    border-bottom: 1px solid var(--line);
+    align-items: baseline;
+  }
+  .tl-what {
+    font-weight: 550;
+  }
+  .tl-where {
+    color: var(--ink-2);
+  }
+  .cols {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--gap);
+  }
+  .cols > div {
+    display: grid;
+    gap: 10px;
+    align-content: start;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+  .plain {
+    display: grid;
+    gap: 4px;
+  }
+  @media (max-width: 900px) {
+    .side {
+      display: none;
+    }
+    .content {
+      grid-column: 1 / -1;
+    }
+    .intro-grid {
+      grid-template-columns: 1fr;
+    }
+    .portrait {
+      max-width: 420px;
+    }
+    .timeline li {
+      grid-template-columns: 1fr;
+    }
+    .cols {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

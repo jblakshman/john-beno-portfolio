@@ -1,0 +1,75 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../site.config';
+
+const address = site.legal.address as readonly string[];
+if (!address.length) {
+  console.warn('\n⚠️  Impressum: no postal address set in src/site.config.ts (legal.address). Add one before launch.\n');
+}
+---
+
+<Base title="Impressum" description={`Legal notice (Impressum) for ${site.url.replace('https://', '')}.`} noindex>
+  <article class="legal wrap">
+    <p class="label">Legal notice</p>
+    <h1>Impressum</h1>
+    <p class="muted">Information according to § 5 DDG (Digitale-Dienste-Gesetz)</p>
+
+    <h2>Responsible for this website</h2>
+    <p>
+      {site.name}<br />
+      {address.length ? address.map((line) => <>{line}<br /></>) : <span class="todo">Postal address required before launch</span>}
+    </p>
+
+    <h2>Contact</h2>
+    <p>
+      Email: <a class="link link--under" href={`mailto:${site.email}`}>{site.email}</a>
+      {site.phone && <><br />Phone: {site.phone}</>}
+    </p>
+
+    <h2>Responsible for content according to § 18 (2) MStV</h2>
+    <p>{site.name}, address as above.</p>
+
+    <h2>Liability for links</h2>
+    <p>
+      This website contains links to external websites. I have no influence on their content and accept no liability for it. The respective provider
+      or operator of a linked page is always responsible for its content. If I become aware of any legal violations, I will remove such links
+      immediately.
+    </p>
+
+    <h2>Copyright</h2>
+    <p>
+      All texts, images, videos and designs on this website are my own work unless stated otherwise and may not be used without permission.
+      Brand names such as Orient and Apple belong to their respective owners; the projects shown are student concepts and are not affiliated with
+      those companies.
+    </p>
+  </article>
+</Base>
+
+<style>
+  .legal {
+    padding-top: calc(var(--header-h) + clamp(48px, 8vw, 120px));
+    max-width: calc(62ch + 2 * var(--gutter));
+    display: grid;
+    gap: 14px;
+    font-size: var(--t-md);
+  }
+  h1 {
+    font-size: var(--t-2xl);
+    letter-spacing: -0.045em;
+    line-height: 0.95;
+    margin-bottom: 4px;
+  }
+  h2 {
+    margin-top: 28px;
+    font-size: var(--t-md);
+    font-weight: 600;
+  }
+  .todo {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: #ffe7a3;
+    color: #3a2a00;
+    font-size: var(--t-sm);
+  }
+</style>

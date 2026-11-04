@@ -1,0 +1,5 @@
+# Everyone is welcome, including search engines and AI assistants.
+User-agent: *
+Allow: /
+
+Sitemap: https://john-beno.com/sitemap-index.xml
