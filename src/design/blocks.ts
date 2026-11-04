@@ -85,3 +85,93 @@ document.querySelectorAll<HTMLElement>('[data-embed]').forEach((fig) => {
     frame.focus();
   });
 });
+
+/* Zoom: click an image to see it large ---------------------------------- */
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+document.querySelectorAll<HTMLElement>('figure[data-zoom]').forEach((fig) => {
+  const trigger = fig.querySelector<HTMLButtonElement>('.fig-zoom');
+  const source = fig.querySelector<HTMLImageElement>('.fig-m img');
+  if (!trigger || !source) return;
+  trigger.addEventListener('click', () => openZoom(fig, source, trigger));
+});
+
+function openZoom(fig: HTMLElement, source: HTMLImageElement, trigger: HTMLButtonElement) {
+  const caption = fig.querySelector('figcaption')?.textContent ?? '';
+  const layer = document.createElement('div');
+  layer.className = 'zoom';
+  layer.setAttribute('role', 'dialog');
+  layer.setAttribute('aria-modal', 'true');
+  layer.setAttribute('aria-label', source.alt || 'Image');
+  const bg = document.createElement('div');
+  bg.className = 'zoom-bg';
+  const img = document.createElement('img');
+  img.alt = source.alt;
+  img.src = source.currentSrc || source.src;
+  img.decoding = 'async';
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'zoom-x pill';
+  close.textContent = 'Close';
+  layer.append(bg, img, close);
+  if (caption) {
+    const cap = document.createElement('p');
+    cap.className = 'zoom-cap';
+    cap.textContent = caption;
+    layer.append(cap);
+  }
+  document.body.append(layer);
+
+  // Fit the image into the window, leaving room for the caption and button.
+  const ratio = (source.naturalWidth || source.width) / (source.naturalHeight || source.height) || 1;
+  const pad = Math.max(16, innerWidth * 0.04);
+  const top = 64, bottom = caption ? 72 : 40;
+  let w = Math.min(innerWidth - pad * 2, (source.naturalWidth || 2400) * 1.5);
+  let h = w / ratio;
+  if (h > innerHeight - top - bottom) {
+    h = innerHeight - top - bottom;
+    w = h * ratio;
+  }
+  const end = { left: (innerWidth - w) / 2, top: top + (innerHeight - top - bottom - h) / 2, width: w, height: h };
+  Object.assign(img.style, { left: `${end.left}px`, top: `${end.top}px`, width: `${end.width}px`, height: `${end.height}px` });
+  const from = () => {
+    const r = source.getBoundingClientRect();
+    return `translate(${r.left - end.left}px, ${r.top - end.top}px) scale(${r.width / end.width}, ${r.height / end.height})`;
+  };
+  const timing = { duration: reduceMotion ? 0 : 520, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' };
+  img.animate([{ transform: from() }, { transform: 'none' }], timing);
+  requestAnimationFrame(() => (layer.dataset.open = ''));
+  fig.dataset.zoomed = '';
+
+  // Swap in the large version once it has loaded.
+  const large = new Image();
+  large.src = fig.dataset.zoom!;
+  large.decode().then(() => (img.src = large.src), () => {});
+
+  close.focus({ preventScroll: true });
+  let closing = false;
+  const shut = () => {
+    if (closing) return;
+    closing = true;
+    delete layer.dataset.open;
+    const anim = img.animate([{ transform: 'none' }, { transform: from() }], { ...timing, duration: reduceMotion ? 0 : 380, fill: 'forwards' });
+    anim.finished.finally(() => {
+      layer.remove();
+      delete fig.dataset.zoomed;
+    });
+    removeEventListener('keydown', onKey);
+    removeEventListener('wheel', shut);
+    removeEventListener('scroll', shut);
+    trigger.focus({ preventScroll: true });
+  };
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') shut();
+    if (e.key === 'Tab') {
+      e.preventDefault(); // Close is the only control in the dialog.
+      close.focus();
+    }
+  };
+  layer.addEventListener('click', shut);
+  addEventListener('keydown', onKey);
+  addEventListener('wheel', shut, { passive: true });
+  addEventListener('scroll', shut, { passive: true });
+}

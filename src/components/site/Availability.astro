@@ -1,0 +1,11 @@
+---
+/** The availability line from site.config.ts, with a small live dot. Renders nothing when empty. */
+import { site } from '../../site.config';
+
+interface Props {
+  class?: string;
+}
+const { class: cls } = Astro.props;
+---
+
+{site.availability && <p class:list={['avail', cls]}><i aria-hidden="true"></i>{site.availability}</p>}

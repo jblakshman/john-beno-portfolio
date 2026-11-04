@@ -42,6 +42,7 @@ const ext = { target: '_blank', rel: 'noopener' };
       <a class="ln" href={P.work}>Work</a> / <span class="lbl--ink" aria-current="page">{d.title}</span>
       {inProgress && <span class="status">In progress</span>}
       {d.draft && <span class="status status--draft">Draft</span>}
+      {P.preview && d.unlisted && <span class="status status--draft">Unlisted</span>}
     </nav>
     <h1 class="d cc-title" data-rv>{d.title}</h1>
     <p class="cc-sum ink-2">{d.summary}</p>

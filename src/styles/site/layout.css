@@ -399,3 +399,13 @@ html[data-scroll='smooth'] .mv--smooth { display: inline; }
   .note-tags { justify-self: start; text-align: left; }
   .note-foot > .lbl, .note-foot > .pill { grid-column: 1 / -1; justify-self: start; }
 }
+
+/* Availability ------------------------------------------------------------ */
+.avail { display: inline-flex; align-items: center; gap: 8px; font-size: var(--t-sm); color: var(--ink-2); }
+.avail i { position: relative; width: 7px; height: 7px; border-radius: 50%; background: #2fb36b; flex: none; }
+.avail i::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; border: 1px solid #2fb36b; opacity: 0; animation: avail 2.8s var(--ease) infinite; }
+@keyframes avail { 0% { opacity: 0.6; transform: scale(0.6); } 70%, 100% { opacity: 0; transform: scale(1.6); } }
+@media (prefers-reduced-motion: reduce) { .avail i::after { animation: none; } }
+.nv-avail { font-size: inherit; }
+.f-main > .avail { margin-bottom: -6px; }
+@media (max-width: 1100px) { .nv-avail { display: none; } }

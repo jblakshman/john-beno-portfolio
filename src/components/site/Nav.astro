@@ -1,6 +1,7 @@
 ---
 import { site } from '../../site.config';
 import { paths } from '../../design/paths';
+import Availability from './Availability.astro';
 
 const p = paths(Astro.url);
 const path = Astro.url.pathname.replace(/\.html$/, '');
@@ -23,6 +24,7 @@ const current = (href: string) => !href.includes('#') && (path === href || path.
       <ul role="list">{links.map((l) => <li><a class="ln" href={l.href} aria-current={current(l.href) ? 'page' : undefined}>{l.label}</a></li>)}</ul>
     </nav>
     <div class="nv-end">
+      <Availability class="nv-avail" />
       <span class="lbl nv-time">{site.location.city} <time data-clock class="tab">--:--</time></span>
       <button class="theme" type="button" data-theme-toggle aria-label="Switch between light and dark"><i aria-hidden="true"></i></button>
       <button class="crn-btn nv-mbtn" type="button" data-menu-open aria-expanded="false" aria-controls="site-menu"><span class="ln">Menu</span></button>

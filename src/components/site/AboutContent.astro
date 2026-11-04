@@ -1,6 +1,7 @@
 ---
 import { Picture } from 'astro:assets';
 import { site } from '../../site.config';
+import Availability from './Availability.astro';
 import portrait from '../../assets/about/portrait-arms-crossed.jpg';
 
 
@@ -67,6 +68,7 @@ const interests = ['UI & UX design', 'Photography', 'Videography', 'Music'];
               about chasing results and more about staying curious. Even when something doesn’t work, it usually opens the door to something that
               does.
             </p>
+            <Availability />
             <p class="intro-links">
               <a class="pill pill--solid" href={site.cv} target="_blank" rel="noopener">Download CV <span class="arrow arrow--ne" aria-hidden="true">↗</span></a>
               <a class="pill" href="#contact">Get in touch</a>

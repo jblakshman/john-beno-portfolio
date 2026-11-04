@@ -10,7 +10,7 @@ const pages = [
   { path: '/lab/p/apps', label: 'Apps' },
   { path: '/lab/p/notes', label: 'Notes' },
   { path: '/lab/p/colophon', label: 'Colophon' },
-  ...(await getProjects({ drafts: true })).map((p) => ({ path: `/lab/p/work/${p.id}`, label: p.data.draft ? `${p.data.title} (draft)` : p.data.title })),
+  ...(await getProjects({ drafts: true })).map((p) => ({ path: `/lab/p/work/${p.id}`, label: `${p.data.title}${p.data.draft ? ' (draft)' : p.data.unlisted ? ' (unlisted)' : ''}` })),
   ...(await getNotes({ drafts: true })).map((n) => ({ path: `/lab/p/notes/${n.id}`, label: `Note: ${n.data.title}${n.data.draft ? ' (draft)' : ''}` })),
 ];
 

@@ -1,6 +1,7 @@
 ---
 import { site } from '../../site.config';
 import { paths } from '../../design/paths';
+import Availability from './Availability.astro';
 const p = paths(Astro.url);
 const showApps = p.preview || site.sections.apps;
 const showColophon = p.preview || site.sections.colophon;
@@ -10,6 +11,7 @@ const showColophon = p.preview || site.sections.colophon;
   <div class="f-top grid">
     <p class="lbl">Contact</p>
     <div class="f-main">
+      <Availability />
       <h2 class="d f-hello" data-rv>Good ideas often begin with a simple hello.</h2>
       <div class="f-mail">
         <a class="ln" href={`mailto:${site.email}`}>{site.email}</a>

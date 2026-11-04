@@ -40,6 +40,12 @@ const work = defineCollection({
       kind: z.enum(['case-study', 'app', 'experiment']).default('case-study'),
       /** Show in the work list on the home page. Turn off to keep a project reachable by link only. */
       featured: z.boolean().default(true),
+      /**
+       * Link only: kept out of the work list, the sitemap and search results,
+       * but anyone with the address can open it. For work under NDA that you
+       * share with one person. (Not a password: do not use it for secrets.)
+       */
+      unlisted: z.boolean().default(false),
       /** Your role in one line, e.g. "Lead designer · research, interaction, prototyping". */
       role: z.string().optional(),
       year: z.number().int().optional(),

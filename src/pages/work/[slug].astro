@@ -9,6 +9,6 @@ const { project, next } = Astro.props as { project: Project; next: Project };
 const d = project.data;
 ---
 
-<Site title={d.title} description={d.description} image={d.cover} imageAlt={d.coverAlt} ogType="article" accent={d.accent} jsonLd={caseGraph(project)}>
+<Site title={d.title} description={d.description} image={d.cover} imageAlt={d.coverAlt} ogType="article" accent={d.accent} noindex={d.unlisted} jsonLd={d.unlisted ? undefined : caseGraph(project)}>
   <CaseContent project={project} next={next} />
 </Site>

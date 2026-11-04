@@ -28,6 +28,12 @@ export const site = {
   },
   cv: '/files/john-beno-lakshman-cv.pdf',
   /**
+   * What you are open to, shown with a small green dot in the navigation,
+   * the footer and on the About page. e.g. 'Open to internships from March 2026'.
+   * Leave empty to hide it.
+   */
+  availability: '' as string,
+  /**
    * Sections that appear in the navigation and sitemap. Switch one on when it
    * has real content. (The Design Studio preview always shows them.)
    */

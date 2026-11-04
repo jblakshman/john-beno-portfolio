@@ -34,7 +34,7 @@ function audit(p: Project) {
 export async function projectPaths({ drafts = false } = {}) {
   const all = await getProjects({ drafts });
   all.forEach(audit);
-  const ring = all.filter((p) => !p.data.draft && p.data.featured);
+  const ring = all.filter((p) => !p.data.draft && p.data.featured && !p.data.unlisted);
   return all.map((project) => {
     const i = ring.indexOf(project);
     return { params: { slug: project.id }, props: { project, next: ring[(i + 1) % ring.length] ?? all[0] } };

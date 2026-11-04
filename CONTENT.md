@@ -47,6 +47,7 @@ you fill it in.
 | `credits` | Collaborators, shown at the end. |
 | `kind` | `case-study`, `app` or `experiment`. |
 | `featured` | `false` keeps a project off the home page but reachable by link. |
+| `unlisted` | Link only: kept out of the work list, the sitemap and search results. For NDA work you share with one person. It is not a password, so nothing secret. |
 | `status` | `in-progress` adds an "In progress" tag. |
 | `previewVideo` | A short silent loop some work layouts play on the cover (`npm run media -- loop`). |
 | `draft` | `true` while you work on it. |
@@ -66,7 +67,7 @@ Most blocks take `w` for their width:
 
 | Block | Use it for |
 | --- | --- |
-| `Figure` | One image. `frame="mat"` puts UI screens on a soft surface, `frame="phone"` and `frame="browser"` add a light device frame. `ratio="16/9"` crops. |
+| `Figure` | One image. `frame="mat"` puts UI screens on a soft surface, `frame="phone"` and `frame="browser"` add a light device frame. `ratio="16/9"` crops. Click opens it large (`zoom={false}` turns that off). |
 | `Gallery` | Two to four figures side by side (`cols={3}`), or `layout="strip"` for a sideways-scrolling row of phone screens. |
 | `Video` | A recording. `autoplay` loops it silently while it is on screen; without it, it has controls. |
 | `Scrub` | A video that plays as the reader scrolls, with captions at set moments. For walkthroughs. |
@@ -175,6 +176,7 @@ preview always shows everything, so you can design a section before it goes live
 | --- | --- |
 | The look of the live site | Design Studio (`/lab`) → **Copy for the live site** → paste over `src/design.config.ts` |
 | Name, role, email, profiles, Impressum address | `src/site.config.ts` |
+| “Open to …” line in the navigation, footer and About | `availability` in `src/site.config.ts` |
 | Show the Apps or Notes section on the live site | `sections` in `src/site.config.ts` |
 | About page text | `src/components/site/AboutContent.astro` |
 | Home page intro | `src/components/site/Hero.astro` |
