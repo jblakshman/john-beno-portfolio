@@ -1,0 +1,21 @@
+---
+/** An iPhone frame for running a web version of an iOS app. Default slot is the app. */
+interface Props { label?: string }
+const { label = 'App' } = Astro.props;
+---
+
+<div class="ip" role="group" aria-label={`${label} on iPhone`}>
+  <div class="ip-screen">
+    <div class="ip-status" aria-hidden="true">
+      <time data-clock class="tab">9:41</time>
+      <span class="ip-island"></span>
+      <span class="ip-icons">
+        <svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+        <svg viewBox="0 0 16 12"><path d="M8 11.6l2.4-2.6a3.4 3.4 0 0 0-4.8 0zM3.3 6.6a6.6 6.6 0 0 1 9.4 0l1.6-1.7a8.9 8.9 0 0 0-12.6 0zM0 3.3a11.3 11.3 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+        <svg viewBox="0 0 27 12"><rect x="0.5" y="0.5" width="23" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="16" height="8" rx="2"/><path d="M25 4v4a2 2 0 0 0 0-4z" opacity=".45"/></svg>
+      </span>
+    </div>
+    <div class="ip-app"><slot /></div>
+    <span class="ip-home" aria-hidden="true"></span>
+  </div>
+</div>

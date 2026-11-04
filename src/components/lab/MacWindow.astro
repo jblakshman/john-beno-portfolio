@@ -1,0 +1,28 @@
+---
+/**
+ * A macOS window for running a web version of a Mac app.
+ * Traffic lights work: red closes, yellow minimises, green fills the stage.
+ * Slots: default (main content), "sidebar", "toolbar".
+ */
+interface Props { title: string; sidebar?: boolean }
+const { title, sidebar = true } = Astro.props;
+---
+
+<div class="mac-stage" data-mac-stage>
+  <div class="mw" data-mac role="group" aria-label={`${title} window`}>
+    <div class="mw-chrome">
+      <div class="mw-lights">
+        <button type="button" class="mw-l mw-close" data-mw="close" aria-label="Close window"><svg viewBox="0 0 8 8"><path d="M1.5 1.5l5 5M6.5 1.5l-5 5"/></svg></button>
+        <button type="button" class="mw-l mw-min" data-mw="min" aria-label="Minimise window"><svg viewBox="0 0 8 8"><path d="M1.2 4h5.6"/></svg></button>
+        <button type="button" class="mw-l mw-zoom" data-mw="zoom" aria-label="Fill the stage"><svg viewBox="0 0 8 8"><path d="M1.6 5.9V2.6l3.3 3.3zM6.4 2.1v3.3L3.1 2.1z" fill="currentColor" stroke="none"/></svg></button>
+      </div>
+      <span class="mw-title">{title}</span>
+      <div class="mw-tools"><slot name="toolbar" /></div>
+    </div>
+    <div class:list={['mw-body', { 'mw-body--side': sidebar }]}>
+      {sidebar && <aside class="mw-side"><slot name="sidebar" /></aside>}
+      <div class="mw-main"><slot /></div>
+    </div>
+  </div>
+  <button type="button" class="mw-dock" data-mw-restore hidden><span class="mw-dock-icon" aria-hidden="true"></span>{title}</button>
+</div>
