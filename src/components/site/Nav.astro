@@ -14,10 +14,13 @@ const links = [
   { href: '#contact', label: 'Contact', key: 'contact' },
 ].map((l, i) => ({ ...l, n: String(i + 1).padStart(2, '0') }));
 const current = (href: string) => !href.includes('#') && (path === href || path.startsWith(href + '/'));
+import { variantOf } from '../../design/variant';
+const v = variantOf(p.preview);
 ---
 
 <header class="site-nav">
   <!-- Bar -->
+  {v('nav', 'bar') && (
   <div class="nv nv--bar wrap">
     <a class="nv-name ln" href={p.home}>{site.name}</a>
     <nav aria-label="Main">
@@ -30,8 +33,10 @@ const current = (href: string) => !href.includes('#') && (path === href || path.
       <button class="crn-btn nv-mbtn" type="button" data-menu-open aria-expanded="false" aria-controls="site-menu"><span class="ln">Menu</span></button>
     </div>
   </div>
+  )}
 
   <!-- Liquid Glass island -->
+  {v('nav', 'island') && (
   <div class="nv nv--island">
     <div class="isl" data-island>
       <a class="isl-name" href={p.home}><span class="isl-dot" aria-hidden="true"></span><span>{site.shortName}</span></a>
@@ -44,21 +49,27 @@ const current = (href: string) => !href.includes('#') && (path === href || path.
       </nav>
     </div>
   </div>
+  )}
 
   <!-- Side index -->
+  {v('nav', 'index') && (
   <div class="nv nv--index">
     <a class="nv-name ln" href={p.home}>{site.name}</a>
     <nav aria-label="Main">
       <ol role="list">{links.map((l) => <li><a href={l.href} data-index-link={l.key} aria-current={current(l.href) ? 'page' : undefined}><span class="lbl tab">{l.n}</span> {l.label}</a></li>)}</ol>
     </nav>
     <button class="theme" type="button" data-theme-toggle aria-label="Switch between light and dark"><i aria-hidden="true"></i></button>
+    <button class="crn-btn nv-mbtn" type="button" data-menu-open aria-expanded="false" aria-controls="site-menu"><span class="ln">Menu</span></button>
   </div>
+  )}
 
   <!-- Corners -->
+  {v('nav', 'corner') && (
   <div class="nv nv--corner wrap">
     <a class="nv-name ln" href={p.home}>{site.name}</a>
     <button class="crn-btn" type="button" data-menu-open aria-expanded="false" aria-controls="site-menu"><span class="ln">Menu</span></button>
   </div>
+  )}
 </header>
 
 <div class="menu" id="site-menu" hidden>

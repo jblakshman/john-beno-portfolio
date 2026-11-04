@@ -250,12 +250,8 @@ export const groups: Group[] = [
   },
 ];
 
-export type Config = Record<string, string>;
-
-import { design } from '../design.config';
-
-/** The Studio starts from the live site's look. */
-export const defaults: Config = { ...design };
+import { defaults, STORAGE_KEY, type Config } from './defaults';
+export { defaults, STORAGE_KEY, type Config };
 
 export const presets: { id: string; label: string; note: string; config: Partial<Config> }[] = [
   {
@@ -297,7 +293,6 @@ export const presets: { id: string; label: string; note: string; config: Partial
   { id: 'current', label: 'Live site', note: 'What is live today (src/design.config.ts).', config: { ...defaults } },
 ];
 
-export const STORAGE_KEY = 'jb-lab-config-v2';
 
 export function sanitize(input: Partial<Config> | null | undefined): Config {
   const out: Config = { ...defaults };

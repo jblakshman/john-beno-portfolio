@@ -1,19 +1,5 @@
-/* Fonts used by the Studio (only downloaded when a pairing actually uses them) */
-@import '@fontsource-variable/mona-sans/standard.css';
-@import '@fontsource-variable/martian-mono/standard.css';
-@import '@fontsource-variable/instrument-sans/standard.css';
-@import '@fontsource/instrument-serif/400.css';
-@import '@fontsource/instrument-serif/400-italic.css';
-@import '@fontsource-variable/geist/index.css';
-@import '@fontsource-variable/geist-mono/index.css';
-@import '@fontsource/cormorant-garamond/300.css';
-@import '@fontsource/cormorant-garamond/400.css';
-@import '@fontsource/cormorant-garamond/500.css';
-@import '@fontsource/cormorant-garamond/400-italic.css';
-@import '@fontsource-variable/manrope/index.css';
-@import '@fontsource-variable/newsreader/standard.css';
-@import '@fontsource-variable/newsreader/standard-italic.css';
-@import '@fontsource-variable/archivo/standard.css';
+/* Font faces (Latin only); each downloads only when the chosen typography uses it. */
+@import './fonts.css';
 
 /* ------------------------------------------------------------------
    Palettes. Each is a complete scheme; dark ones set color-scheme.

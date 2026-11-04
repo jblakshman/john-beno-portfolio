@@ -1,4 +1,4 @@
-import type { Config } from './design/options';
+import type { Config } from './design/defaults';
 
 /**
  * The live site's look. Choose it in the Design Studio (/lab), press

@@ -14,10 +14,13 @@ const n = (i: number) => String(i + 1).padStart(2, '0');
 const total = String(projects.length).padStart(2, '0');
 const cta = (p: CollectionEntry<'work'>) => (p.data.status === 'in-progress' ? 'Preview case study' : 'View case study');
 const semester = (p: CollectionEntry<'work'>) => p.data.context.split('·')[0].trim();
+import { variantOf } from '../../design/variant';
+const v = variantOf(paths(Astro.url).preview);
 ---
 
 <div id="work" class="work">
   <!-- 1 Rows -->
+  {v('layout', 'rows') && (
   <section class="L L-rows wrap" aria-label="Selected work">
     <div class="sec-head"><h2 class="lbl lbl--ink">Selected work</h2><span class="lbl tab">({total})</span></div>
     <div class="ps">
@@ -37,8 +40,10 @@ const semester = (p: CollectionEntry<'work'>) => p.data.context.split('·')[0].t
       }
     </div>
   </section>
+  )}
 
   <!-- 2 Index -->
+  {v('layout', 'index') && (
   <section class="L L-index wrap" aria-label="Selected work" data-index>
     <div class="ix grid">
       <aside class="ix-bio">
@@ -67,8 +72,10 @@ const semester = (p: CollectionEntry<'work'>) => p.data.context.split('·')[0].t
       </div>
     </div>
   </section>
+  )}
 
   <!-- 3 Reel -->
+  {v('layout', 'reel') && (
   <section class="L L-reel" aria-label="Selected work" data-reel style={`--n:${projects.length}`}>
     <div class="rl-sticky">
       <div class="rl-head wrap"><h2 class="lbl lbl--ink">Selected work</h2><span class="lbl tab" data-reel-count>01 / {total}</span></div>
@@ -88,8 +95,10 @@ const semester = (p: CollectionEntry<'work'>) => p.data.context.split('·')[0].t
       <div class="rl-ruler" aria-hidden="true"><i data-reel-thumb></i></div>
     </div>
   </section>
+  )}
 
   <!-- 4 Slides -->
+  {v('layout', 'slides') && (
   <section class="L L-slides" aria-label="Selected work" data-slides style={`--n:${projects.length}`}>
     <div class="sl-sticky wrap">
       <div class="sl-text">
@@ -118,8 +127,10 @@ const semester = (p: CollectionEntry<'work'>) => p.data.context.split('·')[0].t
       </ol>
     </div>
   </section>
+  )}
 
   <!-- 5 Stack -->
+  {v('layout', 'stack') && (
   <section class="L L-stack wrap" aria-label="Selected work" data-stack>
     <div class="sec-head"><h2 class="lbl lbl--ink">Selected work</h2><span class="lbl tab">({total})</span></div>
     <div class="ps">
@@ -138,8 +149,10 @@ const semester = (p: CollectionEntry<'work'>) => p.data.context.split('·')[0].t
       }
     </div>
   </section>
+  )}
 
   <!-- 6 Quiet -->
+  {v('layout', 'quiet') && (
   <section class="L L-quiet wrap" aria-label="Selected work" data-quiet>
     <div class="q-col">
       <h2 class="lbl lbl--ink">Selected work</h2>
@@ -161,8 +174,10 @@ const semester = (p: CollectionEntry<'work'>) => p.data.context.split('·')[0].t
       {projects.map((p, i) => <Cover project={p} class="q-pic" style={`--k:${i}`} sizes="320px" vt={false} video={false} />)}
     </div>
   </section>
+  )}
 
   <!-- 9 Gallery -->
+  {v('layout', 'gallery') && (
   <section class="L L-gallery wrap" aria-label="Selected work">
     <div class="sec-head"><h2 class="lbl lbl--ink">Selected work</h2><span class="lbl tab">({total})</span></div>
     <div class="gl ps">
@@ -180,4 +195,5 @@ const semester = (p: CollectionEntry<'work'>) => p.data.context.split('·')[0].t
       }
     </div>
   </section>
+  )}
 </div>

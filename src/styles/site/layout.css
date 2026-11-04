@@ -113,8 +113,10 @@ html[data-switching][data-pt]::view-transition-new(root) { animation: none; }
   .nv--bar nav, .nv-time { display: none; }
   .nv--index { position: static; width: auto; flex-direction: row; justify-content: space-between; align-items: center; height: var(--header-h); padding: 0 var(--gutter);
     background: color-mix(in oklab, var(--bg) 85%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
-  .nv--index ol { flex-direction: row; gap: 12px; }
-  .nv--index .theme { margin: -4px; }
+  .nv--index nav { display: none; }
+  .nv--index .theme { margin: -4px -4px -4px auto; }
+  .nv--index .nv-mbtn { margin-left: 16px; }
+  .nv--index .nv-name { white-space: nowrap; }
   .nv--index .lbl { display: none; }
   html[data-nav='index'] main, html[data-nav='index'] .site-foot { padding-left: 0; }
   .isl-now { display: none; }

@@ -104,14 +104,27 @@ export function initPointer() {
     magnetTarget = { x: 0, y: 0 };
   }
 
+  // The loop sleeps once every spring has come to rest, and input wakes it.
+  let raf = 0;
+  const wake = () => {
+    if (!raf) {
+      last = performance.now();
+      raf = requestAnimationFrame(loop);
+    }
+  };
+  const still = (s: Spring, t: number) => Math.abs(s.v) < 0.02 && Math.abs(t - s.x) < 0.02;
+
   function loop(now: number) {
+    raf = 0;
     const dt = Math.min(0.033, (now - last) / 1000) || 1 / 60;
     last = now;
+    let moving = false;
     const kind = root.dataset.cursor;
     if (kind === 'label') {
       step(lx, px, 520, 40, dt);
       step(ly, py, 520, 40, dt);
       label!.style.transform = `translate3d(${lx.x}px, ${ly.x}px, 0)`;
+      moving = !still(lx, px) || !still(ly, py);
     }
     if (kind === 'pointer') {
       const k = reduce ? 4000 : 600;
@@ -140,11 +153,16 @@ export function initPointer() {
       ptr!.style.width = `${Math.max(1, w.x).toFixed(2)}px`;
       ptr!.style.height = `${Math.max(1, h.x).toFixed(2)}px`;
       ptr!.style.borderRadius = `${Math.max(0, r.x).toFixed(2)}px`;
+      moving =
+        releasing.length > 0 ||
+        (magnet !== null && (!still(mx, magnetTarget.x) || !still(my, magnetTarget.y))) ||
+        !still(x, tx) || !still(y, ty) || !still(w, target.w) || !still(h, target.h) || !still(r, target.r);
     }
-    requestAnimationFrame(loop);
+    if (moving) raf = requestAnimationFrame(loop);
   }
 
   document.addEventListener('pointermove', (e) => {
+    wake();
     const first = px < -50;
     px = e.clientX;
     py = e.clientY;
@@ -160,10 +178,12 @@ export function initPointer() {
   });
   document.addEventListener('pointerdown', () => {
     if (root.dataset.cursor !== 'pointer') return;
+    wake();
     w.v -= 140;
     h.v -= 140;
   });
   document.addEventListener('pointerleave', () => {
+    wake();
     mode = 'hidden';
     delete label.dataset.on;
     setMagnet(null);
@@ -172,6 +192,7 @@ export function initPointer() {
     // Controls move under a resting pointer while scrolling; re-check.
     const el = document.elementFromPoint(px, py);
     if (el) resolve({ target: el } as unknown as PointerEvent);
+    wake();
   }, { passive: true });
-  requestAnimationFrame(loop);
+  wake();
 }

@@ -33,10 +33,13 @@ const pic = (sizes: string, cls = 'fill') => ({
 });
 const inProgress = d.status === 'in-progress';
 const ext = { target: '_blank', rel: 'noopener' };
+import { variantOf } from '../../design/variant';
+const v = variantOf(P.preview);
 ---
 
 <article class="case" data-section={d.title}>
   <!-- Classic -->
+  {v('case', 'classic') && (
   <header class="C C-classic wrap">
     <nav class="lbl crumbs" aria-label="Breadcrumb">
       <a class="ln" href={P.work}>Work</a> / <span class="lbl--ink" aria-current="page">{d.title}</span>
@@ -57,8 +60,10 @@ const ext = { target: '_blank', rel: 'noopener' };
     </dl>
     <div class="m cc-hero" data-vt style={vt}><Picture {...pic('100vw')} /></div>
   </header>
+  )}
 
   <!-- Cinematic -->
+  {v('case', 'cinematic') && (
   <header class="C C-cinematic">
     <div class="m ci-hero" data-vt style={vt}><Picture {...pic('100vw')} /></div>
     <div class="ci-over wrap">
@@ -73,8 +78,10 @@ const ext = { target: '_blank', rel: 'noopener' };
       </dl>
     </div>
   </header>
+  )}
 
   <!-- Editorial -->
+  {v('case', 'editorial') && (
   <header class="C C-editorial wrap">
     <p class="lbl ce-kicker">{d.context} · {d.role ?? d.disciplines.join(', ')}</p>
     <h1 class="d ce-title" data-rv>{d.title}</h1>
@@ -85,6 +92,7 @@ const ext = { target: '_blank', rel: 'noopener' };
       {links.map((l) => <> · <a class="ln" href={l.url} {...ext}>{l.label} ↗</a></>)}
     </p>
   </header>
+  )}
 
   {
     d.glance && (

@@ -11,9 +11,17 @@ import '../styles/site/case.css';
 import { getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import monaLatin from '@fontsource-variable/mona-sans/files/mona-sans-latin-standard-normal.woff2?url';
+import martianLatin from '@fontsource-variable/martian-mono/files/martian-mono-latin-standard-normal.woff2?url';
+import instrumentSerif from '@fontsource/instrument-serif/files/instrument-serif-latin-400-normal.woff2?url';
+import instrumentSans from '@fontsource-variable/instrument-sans/files/instrument-sans-latin-standard-normal.woff2?url';
+import cormorant from '@fontsource/cormorant-garamond/files/cormorant-garamond-latin-400-normal.woff2?url';
+import manrope from '@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2?url';
+import newsreader from '@fontsource-variable/newsreader/files/newsreader-latin-standard-normal.woff2?url';
+import geist from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url';
+import archivo from '@fontsource-variable/archivo/files/archivo-latin-standard-normal.woff2?url';
 import Nav from '../components/site/Nav.astro';
 import Footer from '../components/site/Footer.astro';
-import { defaults, STORAGE_KEY } from '../design/options';
+import { defaults, STORAGE_KEY } from '../design/defaults';
 import { design } from '../design.config';
 import { paths } from '../design/paths';
 import { site } from '../site.config';
@@ -49,6 +57,16 @@ if (image && !ogPath) {
   ogImage = new URL(og.src, site.url).href;
 }
 const darkPalettes = ['ink', 'graphite', 'midnight'];
+/** Fonts the live look needs for its first screen, fetched early. (System fonts need nothing.) */
+const preloadFonts: Record<string, string[]> = {
+  mona: [monaLatin, martianLatin],
+  native: [],
+  gallery: [instrumentSerif, instrumentSans],
+  horology: [cormorant, manrope],
+  editorial: [newsreader, geist],
+  wide: [archivo, martianLatin],
+};
+const fonts = preview ? [monaLatin] : (preloadFonts[design.type] ?? []);
 const attrs = Object.fromEntries(Object.keys(defaults).map((k) => [`data-${k}`, design[k]]));
 ---
 
@@ -90,7 +108,7 @@ const attrs = Object.fromEntries(Object.keys(defaults).map((k) => [`data-${k}`, 
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#fafaf8" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0c0c0b" media="(prefers-color-scheme: dark)" />
-    <link rel="preload" href={monaLatin} as="font" type="font/woff2" crossorigin />
+    {fonts.map((f) => <link rel="preload" href={f} as="font" type="font/woff2" crossorigin />)}
 
     {
       preview ? (

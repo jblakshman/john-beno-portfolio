@@ -159,8 +159,6 @@ function frame(now: number) {
   if (now - last > 33 || reduce) {
     last = now;
     const s = sun();
-    const bg = getComputedStyle(document.body).backgroundColor.match(/\d+/g)?.map(Number) ?? [255, 255, 255];
-    const dark = (bg[0] * 0.3 + bg[1] * 0.59 + bg[2] * 0.11) / 255 < 0.4 ? 1 : 0;
     gl.uniform2f(u.uRes, window.innerWidth, window.innerHeight);
     gl.uniform1f(u.uTime, reduce ? 20 : now / 1000);
     gl.uniform1f(u.uScroll, window.scrollY / Math.max(1, window.innerHeight));
@@ -175,7 +173,15 @@ function frame(now: number) {
   if (!reduce && !document.hidden) raf = requestAnimationFrame(frame);
 }
 
+/** Whether the page is dark, read once per change rather than every frame. */
+let dark = 0;
+function readBackground() {
+  const bg = getComputedStyle(document.body).backgroundColor.match(/\d+/g)?.map(Number) ?? [255, 255, 255];
+  dark = (bg[0] * 0.3 + bg[1] * 0.59 + bg[2] * 0.11) / 255 < 0.4 ? 1 : 0;
+}
+
 export function syncDaylight() {
+  readBackground();
   if (root.dataset.ambient !== 'daylight') {
     cancelAnimationFrame(raf);
     raf = 0;

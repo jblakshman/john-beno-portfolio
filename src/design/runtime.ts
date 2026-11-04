@@ -3,7 +3,7 @@
  * life, and listens to the Studio panel so changes apply without reloading.
  */
 import type Lenis from 'lenis';
-import { defaults, STORAGE_KEY, type Config } from './options';
+import { defaults, STORAGE_KEY, type Config } from './defaults';
 
 const root = document.documentElement;
 const isPreview = root.hasAttribute('data-preview');

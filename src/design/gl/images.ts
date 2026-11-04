@@ -1,8 +1,10 @@
 /**
  * Image shader engine.
  * Each image frame that needs an effect gets its own small WebGL canvas, created
- * only while it is near the viewport and destroyed when it leaves, so only a
- * handful of contexts ever exist. Without WebGL, images simply show as normal.
+ * when it nears the viewport. Contexts stay alive while there is room (so
+ * scrolling back costs nothing) and the one farthest away is released when the
+ * budget is reached. Textures are decoded and downscaled off the main thread.
+ * Without WebGL, images simply show as normal.
  *
  *  - Develop (entrance): shadows emerge first, a warm tone settles to neutral.
  *  - Loupe (hover): a glass loupe with barrel distortion, chromatic rim and shadow.
@@ -132,7 +134,7 @@ type Inst = {
 const root = document.documentElement;
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-const MAX = 12;
+const MAX = 8;
 const developed = new WeakSet<Element>();
 const insts = new Map<HTMLElement, Inst>();
 let io: IntersectionObserver | null = null;
@@ -141,6 +143,7 @@ let lastY = window.scrollY;
 let lastT = performance.now();
 let scrollVel = 0;
 let pointer = { x: -9999, y: -9999 };
+let revealDur = 2.3;
 
 const cfg = (k: string) => root.dataset[k] ?? '';
 const mode = () => ({
@@ -202,7 +205,8 @@ function compile(gl: WebGLRenderingContext) {
 }
 
 function create(host: HTMLElement) {
-  if (insts.has(host) || insts.size >= MAX) return;
+  if (insts.has(host)) return;
+  if (insts.size >= MAX) evictFarthest();
   const img = host.querySelector('img');
   if (!img) return;
   const canvas = document.createElement('canvas');
@@ -227,8 +231,19 @@ function create(host: HTMLElement) {
   canvas.addEventListener('webglcontextlost', () => destroy(host));
   insts.set(host, inst);
   size(inst);
-  const upload = () => {
+  const upload = async () => {
     if (!insts.has(host)) return;
+    // Decode and scale off the main thread to about what the frame shows
+    // (with headroom for the loupe), instead of uploading the full original.
+    let source: TexImageSource = img;
+    const nw = img.naturalWidth, nh = img.naturalHeight;
+    const k = Math.min(1, (Math.max(inst.canvas.width / nw, inst.canvas.height / nh) || 1) * 1.6);
+    if ('createImageBitmap' in window && k < 0.9) {
+      try {
+        source = await createImageBitmap(img, { resizeWidth: Math.round(nw * k), resizeHeight: Math.round(nh * k), resizeQuality: 'high' });
+      } catch {}
+      if (!insts.has(host)) return;
+    }
     const tex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -236,11 +251,12 @@ function create(host: HTMLElement) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     try {
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, source);
     } catch {
       destroy(host);
       return;
     }
+    if (source instanceof ImageBitmap) source.close();
     inst.ready = true;
     draw(inst, performance.now());
     host.setAttribute('data-gl', '');
@@ -248,6 +264,22 @@ function create(host: HTMLElement) {
   };
   if (img.complete && img.naturalWidth) upload();
   else img.addEventListener('load', upload, { once: true });
+}
+
+/** Releases the context farthest from the viewport to stay within budget. */
+function evictFarthest() {
+  const mid = window.innerHeight / 2;
+  let far: HTMLElement | null = null;
+  let best = -1;
+  for (const [host] of insts) {
+    const r = host.getBoundingClientRect();
+    const d = Math.abs(r.top + r.height / 2 - mid);
+    if (d > best) {
+      best = d;
+      far = host;
+    }
+  }
+  if (far) destroy(far);
 }
 
 function destroy(host: HTMLElement) {
@@ -299,7 +331,6 @@ function loop(now: number) {
   lastY = y;
   scrollVel += (Math.max(-1.3, Math.min(1.3, raw / 2600)) - scrollVel) * 0.25;
   const m = mode();
-  const dur = seconds(getComputedStyle(root).getPropertyValue('--dur')) * 2.6;
   let busy = false;
   const vh = window.innerHeight;
   for (const inst of insts.values()) {
@@ -311,9 +342,12 @@ function loop(now: number) {
 
     // Develop entrance starts when the image is properly in view
     if (inst.reveal < 1) {
-      if (!inst.revealStart && r.top < vh * 0.88 && r.bottom > vh * 0.08) inst.revealStart = now;
+      if (!inst.revealStart && r.top < vh * 0.88 && r.bottom > vh * 0.08) {
+        inst.revealStart = now;
+        revealDur = seconds(getComputedStyle(root).getPropertyValue('--dur')) * 2.6;
+      }
       if (inst.revealStart) {
-        inst.reveal = Math.min(1, (now - inst.revealStart) / 1000 / dur);
+        inst.reveal = Math.min(1, (now - inst.revealStart) / 1000 / revealDur);
         if (inst.reveal >= 1) developed.add(inst.host);
         dirty = true;
       }
@@ -387,10 +421,6 @@ export function syncImages(replay = false) {
       entries.forEach((e) => {
         const el = e.target as HTMLElement;
         if (e.isIntersecting) create(el);
-        else {
-          const i = insts.get(el);
-          if (i && (i.reveal >= 1 || i.reveal === 0)) destroy(el);
-        }
       }),
     { rootMargin: '250px 0px' },
   );
