@@ -174,7 +174,7 @@ preview always shows everything, so you can design a section before it goes live
 
 | What | Where |
 | --- | --- |
-| The look of the live site | Design Studio (`/lab`) → **Copy for the live site** → paste over `src/design.config.ts` |
+| The look of the live site | Design Studio (`/lab`) → **Copy for the live site** → paste over `src/design.config.ts`. The button appears after you open `/lab?owner` once in your browser; visitors only see **Share this look**. |
 | Name, role, email, profiles, Impressum address | `src/site.config.ts` |
 | “Open to …” line in the navigation, footer and About | `availability` in `src/site.config.ts` |
 | Show the Apps or Notes section on the live site | `sections` in `src/site.config.ts` |

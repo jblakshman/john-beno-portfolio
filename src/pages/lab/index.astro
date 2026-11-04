@@ -89,8 +89,8 @@ const openByDefault = ['layout', 'pt', 'imgin', 'hover', 'ambient'];
       <aside class="panel" aria-label="Configuration">
         <div class="p-head">
           <div>
-            <h1>Your site</h1>
-            <p>Change anything and the preview updates. Click projects in the preview to see page transitions and case studies.</p>
+            <h1>Design Studio</h1>
+            <p>The tool this site was designed with. Every option changes the real pages: try a preset, open a project, or compare two looks side by side. Nothing here changes the live site.</p>
           </div>
           <div class="p-actions">
             <button type="button" class="btn" data-shuffle title="Random combination">Shuffle</button>
@@ -179,8 +179,14 @@ const openByDefault = ['layout', 'pt', 'imgin', 'hover', 'ambient'];
         </div>
 
         <div class="p-foot">
-          <button type="button" class="btn btn--solid" data-copy-setup>Copy for the live site</button>
-          <p>Paste it over <code>src/design.config.ts</code> and the live site takes on this look.</p>
+          <div class="p-foot-row">
+            <button type="button" class="btn btn--solid" data-share-look>Share this look</button>
+            <a class="btn" href="/">Back to the site</a>
+          </div>
+          <div class="p-owner" data-owner hidden>
+            <button type="button" class="btn" data-copy-setup>Copy for the live site</button>
+            <p>Paste it over <code>src/design.config.ts</code> and push; the live site takes on this look.</p>
+          </div>
         </div>
       </aside>
     </div>
@@ -316,6 +322,11 @@ const openByDefault = ['layout', 'pt', 'imgin', 'hover', 'ambient'];
 
   .p-foot { display: grid; gap: 8px; padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--s-line); }
   .p-foot p { margin: 0; color: var(--s-muted); font-size: 12px; text-align: center; }
+  .p-foot-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+  .p-foot-row .btn { justify-content: center; height: 38px; }
+  .p-owner { display: grid; gap: 6px; padding-top: 6px; border-top: 1px dashed var(--s-line); }
+  .p-owner[hidden] { display: none; }
+  .p-owner .btn { justify-content: center; }
 
   .toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; padding: 10px 14px; border-radius: 10px; background: #ededed; color: #0d0d0d; font-weight: 600; transition: opacity 0.25s, transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 10; }
   .toast[data-on] { opacity: 1; transform: translate(-50%, 0); }

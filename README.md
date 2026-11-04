@@ -57,7 +57,8 @@ what you see there is exactly what ships.
 
 - The page menu at the top opens any page, including drafts.
 - **Copy for the live site** copies a ready `src/design.config.ts`; paste it over
-  the file and push.
+  the file and push. It shows after you open `/lab?owner` once in your browser;
+  visitors get **Share this look** (a link to their combination) instead.
 - Drafts (`draft: true`) are visible in the Studio only.
 
 ## Search engine setup built into the site

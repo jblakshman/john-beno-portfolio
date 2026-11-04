@@ -1,0 +1,198 @@
+---
+# Draft written with Claude in John's voice from what actually happened in the
+# project. Read it, change anything that does not sound like you, then set
+# draft: false. Facts and numbers were measured; see the notes at the end.
+title: This portfolio
+summary: How I rebuilt my portfolio with AI as the builder and myself as the designer, down to a studio for choosing its look.
+description: "This portfolio by John Beno Lakshman: rebuilt with AI as the builder, with a design studio for choosing its look and the decisions his own."
+order: 5
+draft: true
+kind: case-study
+role: Direction, decisions and content · built with Claude Code
+year: 2026
+context: Personal project
+disciplines: [Design Direction, Design Systems, Design Engineering]
+platforms: [Web]
+tools: [Claude Code, Astro, WebGL, Cloudflare]
+cover: ../../assets/work/this-portfolio/cover.png
+coverAlt: The Design Studio comparing two looks of this site side by side, a serif version in midnight blue next to the live version.
+accent: '#ff6a3d'
+glance:
+  challenge: My old portfolio was easy to build in Framer and hard to own. It cost a monthly fee, its pages were heavy, and it could only do what the tool allowed.
+  approach: I set the direction and an AI agent built. Instead of designing one version, I had a studio built that renders every option on my real work, and then I chose.
+  outcome: A site I own for the price of a domain, at a sixth of the old page weight, with full accessibility scores and a system ready for my next projects.
+links:
+  - label: Try the Design Studio
+    url: https://john-beno.com/lab
+    type: live
+  - label: Source code
+    url: https://github.com/jblakshman/john-beno-portfolio
+    type: code
+---
+import Figure from '../../components/blocks/Figure.astro';
+import Gallery from '../../components/blocks/Gallery.astro';
+import Video from '../../components/blocks/Video.astro';
+import Compare from '../../components/blocks/Compare.astro';
+import Annotate from '../../components/blocks/Annotate.astro';
+import Stats from '../../components/blocks/Stats.astro';
+import Quote from '../../components/blocks/Quote.astro';
+import Decision from '../../components/blocks/Decision.astro';
+import Steps from '../../components/blocks/Steps.astro';
+import Note from '../../components/blocks/Note.astro';
+import before from '../../assets/work/this-portfolio/before.png';
+import after from '../../assets/work/this-portfolio/after.png';
+import studio from '../../assets/work/this-portfolio/studio.png';
+import tourPoster from '../../assets/work/this-portfolio/studio-tour-poster.jpg';
+import table from '../../assets/work/this-portfolio/table.png';
+import glance from '../../assets/work/this-portfolio/blocks-glance.png';
+import decision from '../../assets/work/this-portfolio/blocks-decision.png';
+import annotate from '../../assets/work/this-portfolio/blocks-annotate.png';
+import phoneHome from '../../assets/work/this-portfolio/phone-home.png';
+import phoneCase from '../../assets/work/this-portfolio/phone-case.png';
+import phoneTable from '../../assets/work/this-portfolio/phone-table.png';
+import phoneMenu from '../../assets/work/this-portfolio/phone-menu.png';
+
+## Context
+
+My portfolio used to live on Framer. It was quick to set up and looked fine, but it was never really mine: I paid every month to keep it online, every page carried a framework it did not need, and the interactions I could build were the ones the tool offered.
+
+I wanted three things from a new site. To own it outright and pay only for the domain. To be found when someone searches my name. And to show how I think about interaction, not only what I have made. Underneath was a question I wanted to answer for myself: how far can I take a project like this with AI doing the building, without handing over the design?
+
+<Compare before={before} after={after} beforeAlt="The old Framer home page: my first name in large type over a dark purple gradient." afterAlt="The new home page: my name and a one-line statement on a calm off-white page, with my work below." labels={['Framer', 'Now']} caption="The home page before and after, in the same window. Drag to compare." />
+
+## How I worked with AI
+
+I worked with Claude Code, an AI agent that writes and runs code, as the builder. My part was the part I would play on any team: setting the direction, judging the work and deciding what stays.
+
+<Steps
+  items={[
+    { title: 'Direction', text: 'Seven sites I admire, and what I liked about each.' },
+    { title: 'Exploration', text: 'A studio that renders every option on my real work.' },
+    { title: 'Decision', text: 'Comparing looks side by side, then choosing.' },
+    { title: 'Polish', text: 'Fewer things, each one tuned.' },
+  ]}
+/>
+
+Claude researched hosting, search and how designers present their work, then built everything and tested it in real browsers. I checked the results on my laptop and my phone, and said what was wrong.
+
+Not every round was good. The first one included a playground of experimental effects. I called it what it was, AI slop, and we deleted it. The brief I wrote next shaped the rest of the project:
+
+<Quote by="From my brief" role="lightly edited">
+  Polish does not mean adding things and details that nobody needs, but really dialling everything in to be perfectly matched and balanced, and dropping unnecessary bloat.
+</Quote>
+
+<Decision
+  title="What should the AI do?"
+  options={[
+    { name: 'Generate the design', text: 'Fast, but the result tends to look like everyone else’s.' },
+    { name: 'Build what I direct', text: 'It proposes and builds; I decide what stays.', chosen: true },
+  ]}
+>
+  A portfolio is an argument for my taste. If a model decided what the site looks like, the site would argue for the model. So the AI proposes, builds and explains, and I choose.
+</Decision>
+
+## The Design Studio
+
+Designing one version and iterating on it makes comparing slow. So the first real deliverable was not a mockup but a tool: the Design Studio. It runs the actual site in a frame and lets me change 19 decisions, from the layout of the work list to the page transitions and the light falling across the page.
+
+<Video src="/media/studio-tour.mp4" poster={tourPoster} autoplay caption="Presets switch the whole look; Compare puts two looks side by side and keeps them on the same page." />
+
+<Annotate
+  src={studio}
+  alt="The Design Studio: the live site in a preview on the left, the options panel on the right."
+  notes={[
+    { x: 19.3, y: 2.8, title: 'Page menu', text: 'Any page of the site, drafts included.' },
+    { x: 52, y: 2.8, title: 'Compare', text: 'Two looks side by side, following each other through pages and scrolling.' },
+    { x: 79, y: 20, title: 'Presets', text: 'Starting points with a clear character.' },
+    { x: 76.5, y: 31.8, title: 'Your looks', text: 'Combinations worth keeping.' },
+    { x: 76.5, y: 53, title: 'Options', text: 'Each with one line on what it does.' },
+    { x: 82, y: 96.3, title: 'Share this look', text: 'A link to the exact combination.' },
+  ]}
+  caption="Anyone can try it: everything runs in the browser, and nothing changes the live site."
+/>
+
+<Stats
+  items={[
+    { value: '19', label: 'design decisions', note: '78 options in all' },
+    { value: '82 billion', label: 'possible combinations', note: 'Each one renders on my real work' },
+    { value: '7', label: 'presets as starting points' },
+  ]}
+/>
+
+Choosing became a matter of comparing rather than imagining. When I settle on a look, the Studio copies it as a small configuration file, and the live site takes it on with the next deploy.
+
+<Decision
+  title="Should the Studio be a separate prototype?"
+  options={[
+    { name: 'A separate prototype', text: 'Quick to start, but the real site drifts from what I approved.' },
+    { name: 'One shared system', text: 'The Studio and the live site run the same components.', chosen: true },
+  ]}
+>
+  What I see in the Studio is exactly what ships. The live site renders only the look I chose, so visitors download none of the alternatives.
+</Decision>
+
+## Details that carry the feel
+
+Most of the work went into things you only notice when they are missing.
+
+- Images arrive on a soft preview of themselves, in their own colors, instead of an empty box.
+- Pages open out of the project you clicked. In Chrome the next page is already loaded while your pointer rests on the link.
+- Dark mode follows your device and remembers your choice, down to the color of the browser’s address bar.
+- Case studies print, or save as PDF, as clean documents with link addresses written out.
+- Reduced motion, reduced transparency, more contrast and Windows high contrast are respected, not fought.
+- On a slow connection or a modest phone, the site keeps its look and drops the expensive effects.
+
+<Gallery layout="strip" caption="The same system on a phone: the home page, a case study, the 3D model and the menu.">
+  <Figure src={phoneHome} alt="The home page on a phone." frame="phone" />
+  <Figure src={phoneCase} alt="The top of the Tactical Haptic Twin case study on a phone." frame="phone" />
+  <Figure src={phoneTable} alt="The haptic table model on a phone, with labels for the fire and the units." frame="phone" />
+  <Figure src={phoneMenu} alt="The full-screen menu on a phone." frame="phone" />
+</Gallery>
+
+## 3D where it explains
+
+The Tactical Haptic Twin is about a physical model with a digital layer on top, which is hard to get across in still images. Its case study now has a model you can watch and turn: a table of pins rises into a city, an AR layer adds the fire, the routes and the units, and a token placed on the table sends a unit. It is written in plain WebGL, about 7 KB, and only runs while it is on screen.
+
+<Figure src={table} alt="A white model of a city district made of pins, with a fire glowing orange near the center and a blue route along the streets." frame="mat" caption="From the Tactical Haptic Twin case study. Labels and steps sit on top in ordinary HTML, so the text stays sharp." />
+
+## A kit for what comes next
+
+Every project after this one should get the same care without starting from zero. Case studies are plain text files with blocks for what designers show: before and after, annotated screens, decisions, results. A new project starts with one command.
+
+<Figure src={glance} alt="The At a glance card: challenge, approach and outcome in three columns." frame="mat" caption="At a glance: the three lines most people read first." />
+
+<Gallery cols={2} caption="A design decision and an annotated screen, from the template.">
+  <Figure src={decision} alt="A decision block: three options, one marked as chosen, and the reasoning below." frame="mat" />
+  <Figure src={annotate} alt="An annotated screen with numbered markers and notes." frame="mat" />
+</Gallery>
+
+## Performance
+
+<Stats
+  items={[
+    { value: '280 KB', label: 'home page download', note: 'Framer: 1.6 MB' },
+    { value: '9 KB', label: 'JavaScript on the home page', note: 'Framer: 270 KB' },
+    { value: '100', label: 'Lighthouse accessibility, best practices and SEO', note: 'Performance 96–99, mobile' },
+  ]}
+/>
+
+Hosting costs nothing on Cloudflare; the domain is the only bill.
+
+## Reflection
+
+Working this way moved where my time went. Building stopped being the bottleneck, so I could afford to explore far more directions, and to throw work away, like the playground. What did not change is that someone has to decide what good looks like. The AI could build anything I could describe. It could not tell me which of 82 billion versions was mine.
+
+Next I want to use the same approach for my own apps. The Studio already has the device frames for interactive versions of them.
+
+<Note label="What I learned">
+  Treat AI like a fast, capable studio and keep the role of creative director. The clearer the direction and the more ruthless the editing, the better the result.
+</Note>
+
+{/*
+  Sources for the numbers (measured November 2026):
+  - Options and combinations: counted from the Studio (19 groups, 78 options).
+  - Page weight and JavaScript: transfer sizes of the live home pages, measured
+    in Chrome (new site vs john-beno.framer.website).
+  - Lighthouse: mobile runs on the home page, About and case studies.
+  - 3D model: the compressed size of its script.
+*/}

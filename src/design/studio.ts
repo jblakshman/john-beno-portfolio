@@ -159,6 +159,28 @@ ${notes.join('\n')}
 };
 `;
 };
+// Visitors share a link to their exact combination.
+document.querySelector('[data-share-look]')?.addEventListener('click', async () => {
+  const link = `${location.origin}/lab#c=${encodeURIComponent(encode(config))}`;
+  try {
+    await navigator.clipboard.writeText(link);
+    show('Link to this look copied');
+  } catch {
+    prompt('Copy this link:', link);
+  }
+});
+
+// Owner mode (open /lab?owner once on your own browser): copy the look for the live site.
+const owner = (() => {
+  try {
+    if (new URLSearchParams(location.search).has('owner')) localStorage.setItem('jb-owner', '1');
+    return localStorage.getItem('jb-owner') === '1';
+  } catch {
+    return false;
+  }
+})();
+const ownerBox = document.querySelector<HTMLElement>('[data-owner]');
+if (owner && ownerBox) ownerBox.hidden = false;
 document.querySelector('[data-copy-setup]')?.addEventListener('click', async () => {
   const text = configFile(config);
   try {
