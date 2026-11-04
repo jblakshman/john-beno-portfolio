@@ -1,0 +1,17 @@
+---
+import LabPreview from '../../../layouts/LabPreview.astro';
+---
+
+<LabPreview title="Apps">
+  <section class="apps wrap" data-section="Apps">
+    <p class="lbl">Apps · Playable</p>
+    <h1 class="d apps-title" data-rv>Don’t watch the app. Use it.</h1>
+    <p class="apps-intro">Coming soon.</p>
+  </section>
+</LabPreview>
+
+<style>
+  .apps { padding-top: calc(var(--header-h) + clamp(48px, 8vw, 120px)); display: grid; gap: 18px; }
+  .apps-title { font-size: var(--t-display); line-height: 0.9; max-width: 12ch; }
+  .apps-intro { font-size: var(--t-lg); max-width: 40ch; color: var(--ink-2); }
+</style>

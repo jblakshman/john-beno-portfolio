@@ -1,0 +1,74 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Picture } from 'astro:assets';
+import LabPreview from '../../../../layouts/LabPreview.astro';
+
+export async function getStaticPaths() {
+  const projects = (await getCollection('work', ({ data }) => !data.draft)).sort((a, b) => a.data.order - b.data.order);
+  return projects.map((project, i) => ({ params: { slug: project.id }, props: { project, next: projects[(i + 1) % projects.length] } }));
+}
+const { project, next } = Astro.props;
+const d = project.data;
+const { Content, headings } = await render(project);
+const sections = headings.filter((h) => h.depth === 2);
+const meta = [
+  { k: 'Disciplines', v: d.disciplines.join(', ') },
+  { k: 'Tools', v: d.tools.join(', ') },
+  { k: 'Context', v: d.context },
+];
+const vt = `--vt: w-${project.id}`;
+const pic = (sizes: string, cls = 'fill') => ({ src: d.cover, alt: d.coverAlt, formats: ['avif', 'webp'] as const, fallbackFormat: 'jpg' as const, widths: [800, 1200, 1600, 2200], sizes, loading: 'eager' as const, class: cls });
+---
+
+<LabPreview title={d.title}>
+  <article class="case" data-section={d.title}>
+    <!-- Classic -->
+    <header class="C C-classic wrap">
+      <nav class="lbl crumbs" aria-label="Breadcrumb"><a class="ln" href="/lab/p#work">Work</a> / <span class="lbl--ink">{d.title}</span></nav>
+      <h1 class="d cc-title" data-rv>{d.title}</h1>
+      <p class="cc-sum ink-2">{d.summary}</p>
+      <dl class="cmeta grid">
+        {meta.map((m) => <div><dt class="lbl">{m.k}</dt><dd>{m.v}</dd></div>)}
+        <div><dt class="lbl">Link</dt><dd>{d.liveUrl ? <a class="ln" href={d.liveUrl} target="_blank" rel="noopener">{d.liveLabel ?? 'See it live'} ↗</a> : <span class="muted">{d.status === 'in-progress' ? 'Coming soon' : '—'}</span>}</dd></div>
+      </dl>
+      <div class="m cc-hero" data-vt style={vt}><Picture {...pic('100vw')} /></div>
+    </header>
+
+    <!-- Cinematic -->
+    <header class="C C-cinematic">
+      <div class="m ci-hero" data-vt style={vt}><Picture {...pic('100vw')} /></div>
+      <div class="ci-over wrap">
+        <p class="lbl">{d.context}</p>
+        <h1 class="d ci-title" data-rv>{d.title}</h1>
+      </div>
+      <div class="ci-below wrap grid">
+        <p class="ci-sum">{d.summary}</p>
+        <dl class="ci-meta">{meta.map((m) => <div><dt class="lbl">{m.k}</dt><dd>{m.v}</dd></div>)}{d.liveUrl && <div><dt class="lbl">Link</dt><dd><a class="ln" href={d.liveUrl} target="_blank" rel="noopener">{d.liveLabel ?? 'See it live'} ↗</a></dd></div>}</dl>
+      </div>
+    </header>
+
+    <!-- Editorial -->
+    <header class="C C-editorial wrap">
+      <p class="lbl ce-kicker">{d.context} · {d.disciplines.join(', ')}</p>
+      <h1 class="d ce-title" data-rv>{d.title}</h1>
+      <p class="ce-sum">{d.summary}</p>
+      <div class="m ce-hero" data-vt style={vt}><Picture {...pic('(min-width: 900px) 80vw, 100vw')} /></div>
+      <p class="lbl ce-credit">Tools: {d.tools.join(', ')}{d.liveUrl && <> · <a class="ln" href={d.liveUrl} target="_blank" rel="noopener">{d.liveLabel ?? 'See it live'} ↗</a></>}</p>
+    </header>
+
+    <div class="case-body wrap grid">
+      <aside class="case-toc" aria-label="On this page">
+        <p class="lbl">Contents</p>
+        <ol role="list">{sections.map((h) => <li><a class="ln" href={`#${h.slug}`} data-toc={h.slug}>{h.text}</a></li>)}</ol>
+      </aside>
+      <div class="prose"><Content /></div>
+    </div>
+  </article>
+
+  <nav class="next wrap" aria-label="Next project">
+    <a class="next-a grid p" href={`/lab/p/work/${next.id}`} data-cur="Next project">
+      <span class="next-t"><span class="lbl">Next project</span><span class="d next-title">{next.data.title} →</span><span class="ink-2">{next.data.summary}</span></span>
+      <span class="m next-m" data-vt style={`--vt: w-${next.id}`}><Picture src={next.data.cover} alt="" formats={['avif', 'webp']} fallbackFormat="jpg" widths={[640, 960, 1280]} sizes="40vw" class="fill" /></span>
+    </a>
+  </nav>
+</LabPreview>

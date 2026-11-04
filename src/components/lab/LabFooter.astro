@@ -1,0 +1,26 @@
+---
+import { site } from '../../site.config';
+---
+
+<footer class="site-foot wrap" id="contact">
+  <div class="f-top grid">
+    <p class="lbl">Contact</p>
+    <div class="f-main">
+      <h2 class="d f-hello" data-rv>Good ideas often begin with a simple hello.</h2>
+      <div class="f-mail">
+        <a class="ln" href={`mailto:${site.email}`}>{site.email}</a>
+        <button class="pill" type="button" data-copy={site.email}><span data-copy-label>Copy email</span></button>
+      </div>
+    </div>
+    <ul class="f-links" role="list">
+      <li><a class="ln" href={site.cv} target="_blank" rel="noopener">CV (PDF) ↗</a></li>
+      <li><a class="ln" href="/lab/p/about">About</a></li>
+      <li><a class="ln" href="/lab/p/apps">Apps</a></li>
+    </ul>
+  </div>
+  <div class="f-word" aria-hidden="true"><span class="d" data-fit>{site.name}</span></div>
+  <div class="f-bottom">
+    <p>© {new Date().getFullYear()} {site.name}</p>
+    <p class="lbl">{site.location.city}, {site.location.countryName} · <time data-clock class="tab">--:--</time></p>
+  </div>
+</footer>

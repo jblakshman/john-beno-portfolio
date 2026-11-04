@@ -1,0 +1,225 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Cover from './Cover.astro';
+import { site } from '../../site.config';
+
+interface Props {
+  projects: CollectionEntry<'work'>[];
+}
+const { projects } = Astro.props;
+const href = (p: CollectionEntry<'work'>) => `/lab/p/work/${p.id}`;
+const n = (i: number) => String(i + 1).padStart(2, '0');
+const total = String(projects.length).padStart(2, '0');
+const cta = (p: CollectionEntry<'work'>) => (p.data.status === 'in-progress' ? 'Preview case study' : 'View case study');
+const semester = (p: CollectionEntry<'work'>) => p.data.context.split('·')[0].trim();
+---
+
+<div id="work" class="work">
+  <!-- 1 Rows -->
+  <section class="L L-rows wrap" aria-label="Selected work">
+    <div class="sec-head"><h2 class="lbl lbl--ink">Selected work</h2><span class="lbl tab">({total})</span></div>
+    <div class="ps">
+      {
+        projects.map((p, i) => (
+          <article class="p r-row grid" data-cur={cta(p)}>
+            <div class="r-meta">
+              <p class="lbl">{p.data.context}</p>
+              <h3 class="d r-title"><a class="stretch" href={href(p)}>{p.data.title}</a></h3>
+              <p class="ink-2 r-sum">{p.data.summary}</p>
+              <ul class="tags" role="list">{p.data.disciplines.map((t) => <li class="tag">{t}</li>)}</ul>
+              <span class="r-cta">{cta(p)} <span aria-hidden="true">→</span></span>
+            </div>
+            <Cover project={p} class="r-media" eager={i === 0} sizes="(min-width: 900px) 64vw, 100vw" />
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- 2 Index -->
+  <section class="L L-index wrap" aria-label="Selected work" data-index>
+    <div class="ix grid">
+      <aside class="ix-bio">
+        <p class="lbl">Index</p>
+        <p class="ix-intro">Four projects from my studies in Computer Science &amp; Design, across interaction, brand, product and sound.</p>
+        <p class="lbl">{site.location.city} · <time data-clock class="tab lbl--ink">--:--</time></p>
+      </aside>
+      <ol class="ix-list ps" role="list">
+        {
+          projects.map((p, i) => (
+            <li class="p" data-ix={i} data-cur={cta(p)}>
+              <a class="ix-item" href={href(p)}>
+                <span class="lbl tab">{n(i)}</span>
+                <span class="ix-title d">{p.data.title}</span>
+                <span class="ix-sum">{p.data.summary}</span>
+                <span class="lbl">{p.data.disciplines.join(', ')}</span>
+              </a>
+              <Cover project={p} class="ix-thumb" vt={false} video={false} sizes="100vw" />
+            </li>
+          ))
+        }
+      </ol>
+      <div class="ix-view" aria-hidden="true">
+        {projects.map((p, i) => <Cover project={p} class="ix-pic" style={`--k:${i}`} sizes="(min-width: 900px) 42vw, 100vw" eager={i === 0} />)}
+        <p class="lbl ix-caption" data-ix-caption>{projects[0].data.title} · {projects[0].data.context}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 Reel -->
+  <section class="L L-reel" aria-label="Selected work" data-reel style={`--n:${projects.length}`}>
+    <div class="rl-sticky">
+      <div class="rl-head wrap"><h2 class="lbl lbl--ink">Selected work</h2><span class="lbl tab" data-reel-count>01 / {total}</span></div>
+      <div class="rl-track ps" data-reel-track>
+        {
+          projects.map((p, i) => (
+            <a class="p rl-card" href={href(p)} data-cur={cta(p)}>
+              <Cover project={p} class="rl-media" sizes="(min-width: 900px) 62vw, 86vw" eager={i === 0} />
+              <span class="rl-cap">
+                <span class="d rl-title">{p.data.title}</span>
+                <span class="lbl">{p.data.context}</span>
+              </span>
+            </a>
+          ))
+        }
+      </div>
+      <div class="rl-ruler" aria-hidden="true"><i data-reel-thumb></i></div>
+    </div>
+  </section>
+
+  <!-- 4 Slides -->
+  <section class="L L-slides" aria-label="Selected work" data-slides style={`--n:${projects.length}`}>
+    <div class="sl-sticky wrap">
+      <div class="sl-text">
+        {
+          projects.map((p, i) => (
+            <div class="sl-t" data-i={i} data-on={i === 0 ? '' : undefined}>
+              <p class="lbl tab">{n(i)} / {total} · {p.data.context}</p>
+              <h3 class="d sl-title"><a href={href(p)}>{p.data.title}</a></h3>
+              <p class="ink-2 sl-sum">{p.data.summary}</p>
+              <a class="pill" href={href(p)} tabindex={i === 0 ? undefined : -1}>{cta(p)} <span aria-hidden="true">→</span></a>
+            </div>
+          ))
+        }
+      </div>
+      <div class="sl-media ps">
+        {
+          projects.map((p, i) => (
+            <a class="p sl-pic" href={href(p)} data-i={i} data-on={i === 0 ? '' : undefined} tabindex="-1" aria-hidden="true" data-cur={cta(p)}>
+              <Cover project={p} sizes="(min-width: 900px) 56vw, 100vw" eager={i === 0} />
+            </a>
+          ))
+        }
+      </div>
+      <ol class="sl-dots" role="list" aria-hidden="true">
+        {projects.map((p, i) => <li data-i={i} data-on={i === 0 ? '' : undefined}><span class="lbl">{p.data.title}</span><i></i></li>)}
+      </ol>
+    </div>
+  </section>
+
+  <!-- 5 Stack -->
+  <section class="L L-stack wrap" aria-label="Selected work" data-stack>
+    <div class="sec-head"><h2 class="lbl lbl--ink">Selected work</h2><span class="lbl tab">({total})</span></div>
+    <div class="ps">
+      {
+        projects.map((p, i) => (
+          <a class="p st-card" href={href(p)} style={`--i:${i}`} data-cur={cta(p)}>
+            <span class="st-bar">
+              <span class="lbl tab">{n(i)}</span>
+              <span class="d st-title">{p.data.title}</span>
+              <span class="st-sum ink-2">{p.data.summary}</span>
+              <span class="lbl st-ctx">{p.data.context}</span>
+            </span>
+            <Cover project={p} class="st-media" sizes="100vw" eager={i === 0} />
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- 6 Quiet -->
+  <section class="L L-quiet wrap" aria-label="Selected work" data-quiet>
+    <div class="q-col">
+      <h2 class="lbl lbl--ink">Selected work</h2>
+      <ol class="q-list ps" role="list">
+        {
+          projects.map((p, i) => (
+            <li class="p" data-q={i}>
+              <a class="q-row" href={href(p)}>
+                <span class="q-title">{p.data.title}</span>
+                <span class="q-sum muted">{p.data.summary}</span>
+                <span class="lbl tab q-sem">{semester(p)}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+    <div class="q-float" aria-hidden="true">
+      {projects.map((p, i) => <Cover project={p} class="q-pic" style={`--k:${i}`} sizes="320px" vt={false} video={false} />)}
+    </div>
+  </section>
+
+  <!-- 7 Strips -->
+  <section class="L L-strips wrap" aria-label="Selected work">
+    <div class="sec-head"><h2 class="lbl lbl--ink">Selected work</h2><span class="lbl tab">({total})</span></div>
+    <div class="sp-box ps">
+      {
+        projects.map((p, i) => (
+          <a class="p sp" href={href(p)} data-open={i === 0 ? '' : undefined} data-cur={cta(p)}>
+            <Cover project={p} class="sp-media" sizes="100vw" eager={i === 0} />
+            <span class="sp-in">
+              <span class="lbl tab">{n(i)} · {p.data.context}</span>
+              <span class="d sp-title">{p.data.title}</span>
+              <span class="sp-sum">{p.data.summary}</span>
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- 8 Blueprint -->
+  <section class="L L-blueprint wrap" aria-label="Selected work">
+    <div class="bp-head">
+      <h2 class="lbl lbl--ink">Sheet 01 — Selected work</h2>
+      <span class="lbl">{projects.length} items · dimensions in px</span>
+    </div>
+    <div class="bp-grid ps">
+      {
+        projects.map((p, i) => (
+          <a class="p bp-cell" href={href(p)} data-cur={cta(p)}>
+            <span class="bp-id lbl">{String.fromCharCode(65 + Math.floor(i / 2))}{(i % 2) + 1}</span>
+            <span class="bp-dim lbl" aria-hidden="true"><span class="tab">{p.data.cover.width} × {p.data.cover.height}</span></span>
+            <Cover project={p} class="bp-media" sizes="(min-width: 900px) 46vw, 100vw" eager={i < 2} />
+            <dl class="bp-spec">
+              <div><dt class="lbl">Project</dt><dd class="d">{p.data.title}</dd></div>
+              <div><dt class="lbl">Context</dt><dd>{p.data.context}</dd></div>
+              <div><dt class="lbl">Disciplines</dt><dd>{p.data.disciplines.join(', ')}</dd></div>
+              <div><dt class="lbl">Tools</dt><dd>{p.data.tools.join(', ')}</dd></div>
+            </dl>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- 9 Gallery -->
+  <section class="L L-gallery wrap" aria-label="Selected work">
+    <div class="sec-head"><h2 class="lbl lbl--ink">Selected work</h2><span class="lbl tab">({total})</span></div>
+    <div class="gl ps">
+      {
+        projects.map((p, i) => (
+          <a class={`p gl-i gl-${i % 4}`} href={href(p)} data-cur={cta(p)}>
+            <Cover project={p} class="gl-media" sizes="(min-width: 900px) 50vw, 100vw" eager={i === 0} />
+            <span class="gl-cap">
+              <span class="d gl-title">{p.data.title}</span>
+              <span class="lbl">{p.data.context}</span>
+            </span>
+            <span class="gl-sum ink-2">{p.data.summary}</span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+</div>

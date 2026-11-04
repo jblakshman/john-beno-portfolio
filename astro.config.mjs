@@ -14,7 +14,7 @@ export default defineConfig({
   integrations: [
     mdx(),
     sitemap({
-      filter: (page) => !/\/(404|impressum|privacy)$/.test(page),
+      filter: (page) => !/\/(404|impressum|privacy)$/.test(page) && !page.includes('/lab'),
     }),
   ],
   image: {

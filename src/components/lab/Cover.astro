@@ -1,0 +1,37 @@
+---
+import { Picture } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  project: CollectionEntry<'work'>;
+  sizes?: string;
+  eager?: boolean;
+  class?: string;
+  /** Adds the shared-element name used by the Morph page transition. */
+  vt?: boolean;
+  alt?: boolean;
+  video?: boolean;
+  style?: string;
+}
+const { project, sizes = '(min-width: 900px) 60vw, 100vw', eager = false, class: cls, vt = true, alt = false, video = true, style = '' } = Astro.props;
+const d = project.data;
+---
+
+<div class:list={['m', cls]} data-vt={vt ? '' : undefined} style={`${vt ? `--vt: w-${project.id};` : ''}${style}`}>
+  <Picture
+    src={d.cover}
+    alt={alt ? d.coverAlt : ''}
+    formats={['avif', 'webp']}
+    fallbackFormat="jpg"
+    widths={[640, 960, 1280, 1800]}
+    sizes={sizes}
+    loading={eager ? 'eager' : 'lazy'}
+    decoding="async"
+    class="fill"
+  />
+  {video && d.previewVideo && <video class="pv" data-src={d.previewVideo} muted loop playsinline preload="none" aria-hidden="true" />}
+  <div class="cap" aria-hidden="true">
+    <span>{d.title}</span>
+    <span class="lbl">{d.disciplines.join(' · ')}</span>
+  </div>
+</div>
