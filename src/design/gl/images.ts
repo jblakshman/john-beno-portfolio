@@ -369,7 +369,7 @@ function kick() {
   if (!raf) raf = requestAnimationFrame(loop);
 }
 
-const candidates = () => [...document.querySelectorAll<HTMLElement>('main .m, main .prose figure > div')].filter((el) => el.querySelector('img'));
+const candidates = () => [...document.querySelectorAll<HTMLElement>('main .m, main .prose .fig--none > .fig-m')].filter((el) => el.querySelector('img') && !el.closest('[data-nogl]'));
 
 export function syncImages(replay = false) {
   readPalette();

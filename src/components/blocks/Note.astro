@@ -1,0 +1,14 @@
+---
+/** A short aside: what you learned, a constraint, what you would do next. */
+import '../../styles/site/blocks.css';
+
+interface Props {
+  label?: string;
+}
+const { label = 'Note' } = Astro.props;
+---
+
+<aside class="blk note" data-w="text">
+  <p class="note-k">{label}</p>
+  <div class="note-b"><slot /></div>
+</aside>

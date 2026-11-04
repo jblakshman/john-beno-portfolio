@@ -1,0 +1,43 @@
+---
+/**
+ * A live prototype or video from Figma, ProtoPie, YouTube or Vimeo. Nothing
+ * loads from the other service until the visitor clicks, which keeps pages
+ * fast and means no third-party requests without consent.
+ */
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { dataW, type Width } from './width';
+import '../../styles/site/blocks.css';
+
+interface Props {
+  /** The embed address, e.g. https://www.figma.com/embed?embed_host=share&url=… */
+  src: string;
+  title: string;
+  poster: ImageMetadata;
+  /** Shown on the button, e.g. "Figma". Guessed from the address when left out. */
+  service?: string;
+  ratio?: string;
+  caption?: string;
+  w?: Width;
+}
+const { src, title, poster, ratio = '16/10', caption, w = 'column' } = Astro.props;
+const host = new URL(src).hostname.replace(/^www\./, '');
+const known: Record<string, string> = { 'figma.com': 'Figma', 'embed.figma.com': 'Figma', 'cloud.protopie.io': 'ProtoPie', 'youtube-nocookie.com': 'YouTube', 'youtube.com': 'YouTube', 'player.vimeo.com': 'Vimeo' };
+const service = Astro.props.service ?? known[host] ?? host;
+const posterUrl = (await getImage({ src: poster, width: Math.min(poster.width, 1600), format: 'webp', quality: 72 })).src;
+---
+
+<figure class="blk fig emb" data-w={dataW(w)} data-nogl data-embed={src} data-title={title}>
+  <div class="fig-m emb-m" style={`aspect-ratio:${ratio}`}>
+    <img src={posterUrl} alt="" loading="lazy" decoding="async" />
+    <button type="button" class="emb-go" data-cur="Play">
+      <span class="emb-play" aria-hidden="true"></span>
+      <span class="emb-t"><span>{title}</span><span class="emb-s">Load from {service}</span></span>
+    </button>
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<script>
+  import '../../design/blocks.ts';
+</script>

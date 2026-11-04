@@ -1,93 +1,147 @@
 ---
-import { render, type CollectionEntry } from 'astro:content';
+/**
+ * A case study page. The header comes in three styles (classic, cinematic,
+ * editorial) and the design config picks one. The body is the project's MDX.
+ */
+import { render } from 'astro:content';
+import { Picture } from 'astro:assets';
 import { paths } from '../../design/paths';
+import { facts, sortedLinks, type Project } from '../../lib/work';
 
-interface Props { project: CollectionEntry<'work'>; next: CollectionEntry<'work'> }
-import { Picture, getImage } from 'astro:assets';
-import scrubPoster from '../../assets/work/tactical-haptic-twin/scrub-poster.jpg';
+interface Props {
+  project: Project;
+  next: Project;
+}
 
 const { project, next } = Astro.props;
 const P = paths(Astro.url);
 const d = project.data;
 const { Content, headings } = await render(project);
 const sections = headings.filter((h) => h.depth === 2);
-const meta = [
-  { k: 'Disciplines', v: d.disciplines.join(', ') },
-  { k: 'Tools', v: d.tools.join(', ') },
-  { k: 'Context', v: d.context },
-];
+const rows = facts(d);
+const links = sortedLinks(d);
 const vt = `--vt: w-${project.id}`;
-const scrubPosterUrl = (await getImage({ src: scrubPoster, width: 1040, format: 'webp', quality: 75 })).src;
-const pic = (sizes: string, cls = 'fill') => ({ src: d.cover, alt: d.coverAlt, formats: ['avif', 'webp'] as ('avif' | 'webp')[], fallbackFormat: 'jpg' as const, widths: [800, 1200, 1600, 2200], sizes, loading: 'eager' as const, class: cls });
+const pic = (sizes: string, cls = 'fill') => ({
+  src: d.cover,
+  alt: d.coverAlt,
+  formats: ['avif', 'webp'] as ('avif' | 'webp')[],
+  fallbackFormat: 'jpg' as const,
+  widths: [800, 1200, 1600, 2200],
+  sizes,
+  loading: 'eager' as const,
+  class: cls,
+});
+const inProgress = d.status === 'in-progress';
+const ext = { target: '_blank', rel: 'noopener' };
 ---
 
+<article class="case" data-section={d.title}>
+  <!-- Classic -->
+  <header class="C C-classic wrap">
+    <nav class="lbl crumbs" aria-label="Breadcrumb">
+      <a class="ln" href={P.work}>Work</a> / <span class="lbl--ink" aria-current="page">{d.title}</span>
+      {inProgress && <span class="status">In progress</span>}
+      {d.draft && <span class="status status--draft">Draft</span>}
+    </nav>
+    <h1 class="d cc-title" data-rv>{d.title}</h1>
+    <p class="cc-sum ink-2">{d.summary}</p>
+    <dl class="cmeta grid">
+      {rows.map((m) => <div><dt class="lbl">{m.k}</dt><dd>{m.v}</dd></div>)}
+      <div>
+        <dt class="lbl">{links.length > 1 ? 'Links' : 'Link'}</dt>
+        <dd class="links">
+          {links.length ? links.map((l) => <a class="ln" href={l.url} {...ext}>{l.label} ↗</a>) : <span class="muted">{inProgress ? 'Coming soon' : '—'}</span>}
+        </dd>
+      </div>
+    </dl>
+    <div class="m cc-hero" data-vt style={vt}><Picture {...pic('100vw')} /></div>
+  </header>
 
-  <article class="case" data-section={d.title}>
-    <!-- Classic -->
-    <header class="C C-classic wrap">
-      <nav class="lbl crumbs" aria-label="Breadcrumb"><a class="ln" href={P.work}>Work</a> / <span class="lbl--ink">{d.title}</span></nav>
-      <h1 class="d cc-title" data-rv>{d.title}</h1>
-      <p class="cc-sum ink-2">{d.summary}</p>
-      <dl class="cmeta grid">
-        {meta.map((m) => <div><dt class="lbl">{m.k}</dt><dd>{m.v}</dd></div>)}
-        <div><dt class="lbl">Link</dt><dd>{d.liveUrl ? <a class="ln" href={d.liveUrl} target="_blank" rel="noopener">{d.liveLabel ?? 'See it live'} ↗</a> : <span class="muted">{d.status === 'in-progress' ? 'Coming soon' : '—'}</span>}</dd></div>
+  <!-- Cinematic -->
+  <header class="C C-cinematic">
+    <div class="m ci-hero" data-vt style={vt}><Picture {...pic('100vw')} /></div>
+    <div class="ci-over wrap">
+      <p class="lbl">{d.context}{inProgress && ' · In progress'}</p>
+      <h1 class="d ci-title" data-rv>{d.title}</h1>
+    </div>
+    <div class="ci-below wrap grid">
+      <p class="ci-sum">{d.summary}</p>
+      <dl class="ci-meta">
+        {rows.map((m) => <div><dt class="lbl">{m.k}</dt><dd>{m.v}</dd></div>)}
+        {links.length > 0 && <div><dt class="lbl">{links.length > 1 ? 'Links' : 'Link'}</dt><dd class="links">{links.map((l) => <a class="ln" href={l.url} {...ext}>{l.label} ↗</a>)}</dd></div>}
       </dl>
-      <div class="m cc-hero" data-vt style={vt}><Picture {...pic('100vw')} /></div>
-    </header>
+    </div>
+  </header>
 
-    <!-- Cinematic -->
-    <header class="C C-cinematic">
-      <div class="m ci-hero" data-vt style={vt}><Picture {...pic('100vw')} /></div>
-      <div class="ci-over wrap">
-        <p class="lbl">{d.context}</p>
-        <h1 class="d ci-title" data-rv>{d.title}</h1>
-      </div>
-      <div class="ci-below wrap grid">
-        <p class="ci-sum">{d.summary}</p>
-        <dl class="ci-meta">{meta.map((m) => <div><dt class="lbl">{m.k}</dt><dd>{m.v}</dd></div>)}{d.liveUrl && <div><dt class="lbl">Link</dt><dd><a class="ln" href={d.liveUrl} target="_blank" rel="noopener">{d.liveLabel ?? 'See it live'} ↗</a></dd></div>}</dl>
-      </div>
-    </header>
+  <!-- Editorial -->
+  <header class="C C-editorial wrap">
+    <p class="lbl ce-kicker">{d.context} · {d.role ?? d.disciplines.join(', ')}</p>
+    <h1 class="d ce-title" data-rv>{d.title}</h1>
+    <p class="ce-sum">{d.summary}</p>
+    <div class="m ce-hero" data-vt style={vt}><Picture {...pic('(min-width: 900px) 80vw, 100vw')} /></div>
+    <p class="lbl ce-credit">
+      {[d.period ?? d.year, d.tools.join(', ')].filter(Boolean).join(' · ')}
+      {links.map((l) => <> · <a class="ln" href={l.url} {...ext}>{l.label} ↗</a></>)}
+    </p>
+  </header>
 
-    <!-- Editorial -->
-    <header class="C C-editorial wrap">
-      <p class="lbl ce-kicker">{d.context} · {d.disciplines.join(', ')}</p>
-      <h1 class="d ce-title" data-rv>{d.title}</h1>
-      <p class="ce-sum">{d.summary}</p>
-      <div class="m ce-hero" data-vt style={vt}><Picture {...pic('(min-width: 900px) 80vw, 100vw')} /></div>
-      <p class="lbl ce-credit">Tools: {d.tools.join(', ')}{d.liveUrl && <> · <a class="ln" href={d.liveUrl} target="_blank" rel="noopener">{d.liveLabel ?? 'See it live'} ↗</a></>}</p>
-    </header>
+  {
+    d.glance && (
+      <section class="glance wrap grid" aria-labelledby="glance-title">
+        <h2 class="lbl glance-h" id="glance-title">At a glance</h2>
+        <dl class="glance-l">
+          <div><dt class="lbl">Challenge</dt><dd>{d.glance.challenge}</dd></div>
+          <div><dt class="lbl">Approach</dt><dd>{d.glance.approach}</dd></div>
+          <div><dt class="lbl">Outcome</dt><dd>{d.glance.outcome}</dd></div>
+        </dl>
+      </section>
+    )
+  }
 
+  <div class="case-body">
     {
-      project.id === 'tactical-haptic-twin' && (
-        <section class="scrub" data-scrub aria-label="Prototype walkthrough">
-          <div class="scrub-sticky wrap">
-            <div class="scrub-frame">
-              <video src="/media/tactical-haptic-twin-scrub.mp4" poster={scrubPosterUrl} muted playsinline preload="auto" aria-label="Prototype recording of the AR layer on the table, controlled by scrolling" />
-            </div>
-            <ol class="scrub-caps" role="list">
-              <li data-from="0" data-to="0.34"><span class="lbl tab">01 / 03</span><p class="d">The physical model is the stage: terrain and buildings you can touch.</p></li>
-              <li data-from="0.34" data-to="0.68"><span class="lbl tab">02 / 03</span><p class="d">The AR layer adds what moves: units, routes and live data.</p></li>
-              <li data-from="0.68" data-to="1.01"><span class="lbl tab">03 / 03</span><p class="d">Commanders act on the table, and the digital twin follows.</p></li>
-            </ol>
-            <div class="scrub-bar" data-scrub-bar aria-hidden="true"><i></i></div>
+      sections.length > 1 && (
+        <aside class="case-toc" aria-label="On this page">
+          <div class="toc-in">
+            <p class="lbl">Contents</p>
+            <ol role="list">{sections.map((h) => <li><a href={`#${h.slug}`} data-toc={h.slug}>{h.text}</a></li>)}</ol>
           </div>
-        </section>
+        </aside>
       )
     }
+    <div class="prose"><Content /></div>
+  </div>
 
-    <div class="case-body wrap grid">
-      <aside class="case-toc" aria-label="On this page">
-        <p class="lbl">Contents</p>
-        <ol role="list">{sections.map((h) => <li><a class="ln" href={`#${h.slug}`} data-toc={h.slug}>{h.text}</a></li>)}</ol>
-      </aside>
-      <div class="prose"><Content /></div>
-    </div>
-  </article>
+  {
+    d.credits.length > 0 && (
+      <section class="credits wrap grid" aria-labelledby="credits-title">
+        <h2 class="lbl" id="credits-title">Credits</h2>
+        <ul role="list">
+          {d.credits.map((c) => (
+            <li>
+              <span class="ink-2">{c.role}</span>
+              {c.url ? <a class="ln" href={c.url} {...ext}>{c.name}</a> : <span>{c.name}</span>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+</article>
 
-  <nav class="next wrap" aria-label="Next project">
-    <a class="next-a grid p" href={P.project(next.id)} data-cur="Next project">
-      <span class="next-t"><span class="lbl">Next project</span><span class="d next-title">{next.data.title} →</span><span class="ink-2">{next.data.summary}</span></span>
-      <span class="m next-m" data-vt style={`--vt: w-${next.id}`}><Picture src={next.data.cover} alt="" formats={['avif', 'webp']} fallbackFormat="jpg" widths={[640, 960, 1280]} sizes="40vw" class="fill" /></span>
-    </a>
-  </nav>
-
+{
+  next && next.id !== project.id && (
+    <nav class="next wrap" aria-label="Next project">
+      <a class="next-a grid p" href={P.project(next.id)} data-cur="Next project">
+        <span class="next-t">
+          <span class="lbl">Next project</span>
+          <span class="d next-title">{next.data.title} →</span>
+          <span class="ink-2">{next.data.summary}</span>
+        </span>
+        <span class="m next-m" data-vt style={`--vt: w-${next.id}`}>
+          <Picture src={next.data.cover} alt="" formats={['avif', 'webp']} fallbackFormat="jpg" widths={[640, 960, 1280]} sizes="40vw" class="fill" />
+        </span>
+      </a>
+    </nav>
+  )
+}

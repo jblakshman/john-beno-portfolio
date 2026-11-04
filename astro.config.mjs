@@ -17,6 +17,10 @@ export default defineConfig({
       filter: (page) => !/\/(404|impressum|privacy)$/.test(page) && !page.includes('/lab'),
     }),
   ],
+  markdown: {
+    // Code blocks in case studies follow light and dark mode.
+    shikiConfig: { themes: { light: 'github-light', dark: 'github-dark' }, defaultColor: false },
+  },
   image: {
     // Generate modern formats; Astro falls back gracefully.
     layout: 'constrained',

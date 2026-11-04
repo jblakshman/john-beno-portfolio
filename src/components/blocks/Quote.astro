@@ -1,0 +1,17 @@
+---
+/** A quote from research, a test session or a client. */
+import { dataW, type Width } from './width';
+import '../../styles/site/blocks.css';
+
+interface Props {
+  by?: string;
+  role?: string;
+  w?: Width;
+}
+const { by, role, w = 'column' } = Astro.props;
+---
+
+<figure class="blk quote" data-w={dataW(w)}>
+  <blockquote class="d"><slot /></blockquote>
+  {by && <figcaption><span>{by}</span>{role && <span class="muted">{role}</span>}</figcaption>}
+</figure>

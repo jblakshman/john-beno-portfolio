@@ -1,13 +1,13 @@
 ---
-import { getCollection } from 'astro:content';
 import Hero from './Hero.astro';
 import Work from './Work.astro';
 import { paths } from '../../design/paths';
 import { site } from '../../site.config';
+import { getProjects } from '../../lib/work';
 
 const p = paths(Astro.url);
 const showApps = p.preview || site.sections.apps;
-const projects = (await getCollection('work', ({ data }) => !data.draft)).sort((a, b) => a.data.order - b.data.order);
+const projects = (await getProjects()).filter((p) => p.data.featured);
 ---
 
 

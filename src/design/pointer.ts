@@ -55,7 +55,7 @@ export function initPointer() {
     if (kind !== 'pointer') return;
     const hv = root.dataset.hover;
     // Over a project image with the loupe, the loupe is the pointer.
-    if (hv === 'loupe' && t.closest('.p .m, .prose figure')) {
+    if (hv === 'loupe' && t.closest('.p .m, .prose .fig--none > .fig-m')) {
       setMagnet(null);
       mode = 'hidden';
       target = { x: px, y: py, w: 18, h: 18, r: 9 };

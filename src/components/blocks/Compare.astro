@@ -1,0 +1,42 @@
+---
+/**
+ * Before and after, with a handle to drag between them. Both images should
+ * have the same size. Works with mouse, touch and the arrow keys.
+ */
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { dataW, fit, imageSizes, type Width } from './width';
+import '../../styles/site/blocks.css';
+
+interface Props {
+  before: ImageMetadata;
+  after: ImageMetadata;
+  beforeAlt: string;
+  afterAlt: string;
+  labels?: [string, string];
+  caption?: string;
+  w?: Width;
+  frame?: 'none' | 'mat';
+  /** Where the handle starts, 0–100. */
+  start?: number;
+}
+const { before, after, beforeAlt, afterAlt, labels = ['Before', 'After'], caption, w = 'column', frame = 'none', start = 50 } = Astro.props;
+const s = imageSizes[w];
+const pic = (src: ImageMetadata, alt: string) => ({ src, alt, formats: ['avif', 'webp'] as ('avif' | 'webp')[], fallbackFormat: src.format === 'png' ? ('png' as const) : ('jpg' as const), widths: fit(s.widths, src.width), sizes: s.sizes, loading: 'lazy' as const });
+---
+
+<figure class:list={['blk fig cmp', `fig--${frame}`]} data-w={dataW(w)} data-nogl data-compare style={`--x:${start}%`}>
+  <div class="fig-m cmp-m" style={`aspect-ratio:${before.width}/${before.height}`}>
+    <Picture {...pic(before, beforeAlt)} class="cmp-a" />
+    <div class="cmp-b"><Picture {...pic(after, afterAlt)} /></div>
+    <span class="cmp-tag cmp-tag--a" aria-hidden="true">{labels[0]}</span>
+    <span class="cmp-tag cmp-tag--b" aria-hidden="true">{labels[1]}</span>
+    <span class="cmp-line" aria-hidden="true"><i></i></span>
+    <input class="cmp-range" type="range" min="0" max="100" step="0.1" value={start} aria-label={`Drag to compare ${labels[0].toLowerCase()} and ${labels[1].toLowerCase()}`} />
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<script>
+  import '../../design/blocks.ts';
+</script>

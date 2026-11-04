@@ -1,47 +1,46 @@
 ---
+/**
+ * A video. Loops silently while visible (autoplay), or plays with controls.
+ * Encode with: npm run media -- web path/to/video.mov
+ */
 import { getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
+import { dataW, type Width } from './width';
+import '../../styles/site/blocks.css';
 
 interface Props {
   src: string;
   poster: ImageMetadata;
   caption?: string;
-  controls?: boolean;
+  /** Describes the video for screen readers when it has no caption. */
+  label?: string;
+  w?: Width;
+  frame?: 'none' | 'mat' | 'phone' | 'browser';
   /** Muted, looping, plays while visible (unless the visitor prefers reduced motion). */
   autoplay?: boolean;
+  controls?: boolean;
   loop?: boolean;
 }
-const { src, poster, caption, controls = false, autoplay = false, loop = false } = Astro.props;
-const posterImg = await getImage({ src: poster, width: 1600, format: 'webp', quality: 80 });
+const { src, poster, caption, label, w = 'column', frame = 'none', autoplay = false, controls = !autoplay, loop = autoplay } = Astro.props;
+const posterImg = await getImage({ src: poster, width: Math.min(poster.width, 1800), format: 'webp', quality: 78 });
 ---
 
-<figure class="figure video">
-  <div class="frame" style={`aspect-ratio:${poster.width}/${poster.height}`}>
+<figure class:list={['blk fig', `fig--${frame}`]} data-w={dataW(w)} data-nogl>
+  <div class="fig-m" style={`aspect-ratio:${poster.width}/${poster.height}`}>
+    {frame === 'browser' && <span class="fig-bar" aria-hidden="true"><i></i><i></i><i></i></span>}
     <video
       src={src}
       poster={posterImg.src}
       muted
       playsinline
-      preload="metadata"
+      preload={autoplay ? 'none' : 'metadata'}
       controls={controls || undefined}
       loop={loop || undefined}
       data-autoplay={autoplay ? '' : undefined}
+      aria-label={label ?? caption}
       width={poster.width}
       height={poster.height}
     ></video>
   </div>
-  {caption && <figcaption class="label">{caption}</figcaption>}
+  {caption && <figcaption>{caption}</figcaption>}
 </figure>
-
-<style>
-  .figure {
-    display: grid;
-    gap: 10px;
-    margin-block: clamp(28px, 4vw, 48px);
-  }
-  .figure figcaption {
-    text-transform: none;
-    letter-spacing: 0.01em;
-    font-size: var(--t-xs);
-  }
-</style>

@@ -143,15 +143,28 @@ document.querySelectorAll<HTMLElement>('[data-try]').forEach((b) => {
   b.addEventListener('keydown', (e) => (e.key === 'Enter' || e.key === ' ') && run(e));
 });
 
-// Copy the setup as readable text plus JSON
+// Copy the setup as a ready-to-paste src/design.config.ts
+const configFile = (c: Config) => {
+  const notes = groups.map((g) => `  ${g.id}: '${c[g.id]}', // ${g.label}: ${g.options.find((o) => o.id === c[g.id])?.label ?? ''}`);
+  return `import type { Config } from './design/options';
+
+/**
+ * The live site's look. Choose it in the Design Studio (/lab), press
+ * "Copy for the live site" and paste the result over this file.
+ * Studio link for this look: ${location.origin}/lab#c=${encodeURIComponent(encode(c))}
+ */
+export const design: Config = {
+${notes.join('\n')}
+};
+`;
+};
 document.querySelector('[data-copy-setup]')?.addEventListener('click', async () => {
-  const lines = groups.map((g) => `- ${g.label}: ${g.options.find((o) => o.id === config[g.id])?.label} (${config[g.id]})`);
-  const text = `My portfolio setup from the Design Studio:\n${lines.join('\n')}\n\nConfig: ${JSON.stringify(config)}\nLink: ${location.origin}/lab#c=${encodeURIComponent(encode(config))}`;
+  const text = configFile(config);
   try {
     await navigator.clipboard.writeText(text);
-    show('Setup copied');
+    show('Copied. Paste it over src/design.config.ts');
   } catch {
-    prompt('Copy your setup:', text);
+    prompt('Copy this into src/design.config.ts:', text);
   }
 });
 
@@ -209,9 +222,15 @@ document.querySelector('[data-hour-now]')?.addEventListener('click', () => {
 // Messages from the preview
 window.addEventListener('message', (e) => {
   if (e.origin !== location.origin || e.data?.type !== 'lab:page') return;
-  const where = document.querySelector('[data-where]');
-  const title = String(e.data.title || '').replace(' · Studio preview', '');
-  if (where) where.textContent = `/ ${title}`;
+  // Keep the page picker in step with where the preview is.
+  const path = String(e.data.path || '').replace(/\.html$/, '').replace(/\/$/, '');
+  if (pagePick && [...pagePick.options].some((o) => o.value === path)) pagePick.value = path;
+  document.querySelector<HTMLAnchorElement>('[data-open-full]')?.setAttribute('href', path || '/lab/p');
+});
+const pagePick = document.querySelector<HTMLSelectElement>('[data-page]');
+pagePick?.addEventListener('change', () => {
+  frame.contentWindow?.location.assign(pagePick.value);
+  document.querySelector<HTMLAnchorElement>('[data-open-full]')?.setAttribute('href', pagePick.value);
 });
 frame.addEventListener('load', () => send());
 

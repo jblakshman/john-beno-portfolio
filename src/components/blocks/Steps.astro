@@ -1,0 +1,24 @@
+---
+/** A short sequence: phases of a project, or the steps of a flow. */
+import { dataW, type Width } from './width';
+import '../../styles/site/blocks.css';
+
+interface Props {
+  items: { title: string; text?: string; meta?: string }[];
+  w?: Width;
+}
+const { items, w = 'column' } = Astro.props;
+const pad = (i: number) => String(i + 1).padStart(2, '0');
+---
+
+<ol class="blk steps" data-w={dataW(w)} role="list" style={`--n:${items.length}`}>
+  {
+    items.map((s, i) => (
+      <li>
+        <span class="steps-n tab">{pad(i)}{s.meta && <span> · {s.meta}</span>}</span>
+        <strong>{s.title}</strong>
+        {s.text && <span class="ink-2">{s.text}</span>}
+      </li>
+    ))
+  }
+</ol>

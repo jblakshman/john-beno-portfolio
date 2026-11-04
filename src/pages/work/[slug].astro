@@ -4,11 +4,11 @@ import CaseContent from '../../components/site/CaseContent.astro';
 import { caseGraph } from '../../lib/schema';
 import { projectPaths, type Project } from '../../lib/work';
 
-export const getStaticPaths = projectPaths;
+export const getStaticPaths = () => projectPaths();
 const { project, next } = Astro.props as { project: Project; next: Project };
 const d = project.data;
 ---
 
-<Site title={d.title} description={d.description} image={d.cover} imageAlt={d.coverAlt} ogType="article" jsonLd={caseGraph(project)}>
+<Site title={d.title} description={d.description} image={d.cover} imageAlt={d.coverAlt} ogType="article" accent={d.accent} jsonLd={caseGraph(project)}>
   <CaseContent project={project} next={next} />
 </Site>

@@ -1,7 +1,7 @@
 ---
 title: Tactical Haptic Twin
 summary: A command table for the fire department that merges a shape-shifting physical city model with an augmented reality digital twin.
-description: Tactical Haptic Twin, a concept by John Beno Lakshman for fire department command. A shape-shifting physical 3D city map combined with an AR digital twin and controlled through tangible tokens.
+description: "Tactical Haptic Twin by John Beno Lakshman: a fire command table that pairs a shape-shifting 3D city model with an AR digital twin and tangible tokens."
 order: 1
 disciplines: [Concept, UX, Interaction Design]
 tools: [Reality Composer, Unity, Gemini]
@@ -12,7 +12,20 @@ previewVideo: /media/tactical-haptic-twin-loop.mp4
 status: in-progress
 ---
 import Video from '../../components/blocks/Video.astro';
+import Scrub from '../../components/blocks/Scrub.astro';
 import demoPoster from '../../assets/work/tactical-haptic-twin/demo-poster.jpg';
+import scrubPoster from '../../assets/work/tactical-haptic-twin/scrub-poster.jpg';
+
+<Scrub
+  src="/media/tactical-haptic-twin-scrub.mp4"
+  poster={scrubPoster}
+  label="Prototype recording of the AR layer on the table, controlled by scrolling"
+  steps={[
+    'The physical model is the stage: terrain and buildings you can touch.',
+    'The AR layer adds what moves: units, routes and live data.',
+    'Commanders act on the table, and the digital twin follows.',
+  ]}
+/>
 
 ## Brief
 

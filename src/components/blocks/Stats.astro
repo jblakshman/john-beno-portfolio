@@ -1,0 +1,27 @@
+---
+/**
+ * Results in numbers. Only use numbers you can back up, and say how they
+ * were measured in the note.
+ * <Stats items={[{ value: '−38%', label: 'time to find a unit', note: 'n = 12, moderated test' }]} />
+ */
+import { dataW, type Width } from './width';
+import '../../styles/site/blocks.css';
+
+interface Props {
+  items: { value: string; label: string; note?: string }[];
+  w?: Width;
+}
+const { items, w = 'column' } = Astro.props;
+---
+
+<dl class="blk stats" data-w={dataW(w)} style={`--n:${items.length}`}>
+  {
+    items.map((s) => (
+      <div>
+        <dt class="stat-l">{s.label}</dt>
+        <dd class="d stat-v tab">{s.value}</dd>
+        {s.note && <dd class="stat-n">{s.note}</dd>}
+      </div>
+    ))
+  }
+</dl>

@@ -3,8 +3,8 @@ import Site from '../../../../layouts/Site.astro';
 import CaseContent from '../../../../components/site/CaseContent.astro';
 import { projectPaths, type Project } from '../../../../lib/work';
 
-export const getStaticPaths = projectPaths;
+export const getStaticPaths = () => projectPaths({ drafts: true });
 const { project, next } = Astro.props as { project: Project; next: Project };
 ---
 
-<Site title={project.data.title}><CaseContent project={project} next={next} /></Site>
+<Site title={project.data.title} accent={project.data.accent}><CaseContent project={project} next={next} /></Site>

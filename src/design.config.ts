@@ -1,10 +1,9 @@
 import type { Config } from './design/options';
 
 /**
- * The look of the live site.
- *
- * Pick a combination in the Design Studio (/lab), press "Copy my setup",
- * and paste the values here. Every option is described in src/design/options.ts.
+ * The live site's look. Choose it in the Design Studio (/lab), press
+ * "Copy for the live site" and paste the result over this file.
+ * Every option is described in src/design/options.ts.
  */
 export const design: Config = {
   layout: 'rows',

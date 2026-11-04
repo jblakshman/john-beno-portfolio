@@ -1,0 +1,45 @@
+---
+/**
+ * A video that plays as the reader scrolls, with captions at set moments.
+ * Encode the video with short keyframe spacing so seeking stays smooth:
+ *   npm run media -- scrub path/to/video.mov
+ */
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  src: string;
+  poster: ImageMetadata;
+  /** Describes the video for screen readers. */
+  label: string;
+  /** Captions, shown one after another as the video plays through. */
+  steps?: string[];
+  /** How long the section is, in screen heights. More means slower. */
+  length?: number;
+}
+const { src, poster, label, steps = [], length = 3.6 } = Astro.props;
+const posterUrl = (await getImage({ src: poster, width: 1400, format: 'webp', quality: 75 })).src;
+const n = steps.length;
+const pad = (i: number) => String(i).padStart(2, '0');
+---
+
+<section class="scrub blk" data-w="full" data-scrub aria-label={label} style={`--len:${length}`}>
+  <div class:list={['scrub-sticky wrap', { 'scrub--solo': !n }]}>
+    <div class="scrub-frame">
+      <video src={src} poster={posterUrl} muted playsinline preload="auto" aria-label={label} width={poster.width} height={poster.height}></video>
+    </div>
+    {
+      n > 0 && (
+        <ol class="scrub-caps" role="list">
+          {steps.map((s, i) => (
+            <li data-from={(i / n).toFixed(3)} data-to={i === n - 1 ? '1.01' : ((i + 1) / n).toFixed(3)}>
+              <span class="lbl tab">{pad(i + 1)} / {pad(n)}</span>
+              <p class="d">{s}</p>
+            </li>
+          ))}
+        </ol>
+      )
+    }
+    <div class="scrub-bar" data-scrub-bar aria-hidden="true"><i></i></div>
+  </div>
+</section>

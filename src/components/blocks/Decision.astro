@@ -1,0 +1,31 @@
+---
+/**
+ * A design decision: the options you weighed and why one won.
+ * <Decision title="…" options={[{ name: 'A', text: '…' }, { name: 'B', text: '…', chosen: true }]}>Why B …</Decision>
+ */
+import { dataW, type Width } from './width';
+import '../../styles/site/blocks.css';
+
+interface Props {
+  title: string;
+  options: { name: string; text: string; chosen?: boolean }[];
+  w?: Width;
+}
+const { title, options, w = 'column' } = Astro.props;
+---
+
+<section class="blk dec" data-w={dataW(w)} aria-label={`Decision: ${title}`}>
+  <p class="dec-k">Decision</p>
+  <h3 class="dec-t">{title}</h3>
+  <ul class="dec-o" role="list" style={`--n:${options.length}`}>
+    {
+      options.map((o) => (
+        <li class:list={{ 'is-chosen': o.chosen }}>
+          <span class="dec-name">{o.name}{o.chosen && <span class="dec-pick">Chosen</span>}</span>
+          <span class="ink-2">{o.text}</span>
+        </li>
+      ))
+    }
+  </ul>
+  {Astro.slots.has('default') && <div class="dec-why"><span class="dec-k">Why</span><div><slot /></div></div>}
+</section>

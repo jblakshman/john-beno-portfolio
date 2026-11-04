@@ -1,0 +1,28 @@
+---
+/** Colors of a design system or brand, with their roles. */
+import { dataW, type Width } from './width';
+import '../../styles/site/blocks.css';
+
+interface Props {
+  colors: { name: string; hex: string; role?: string }[];
+  w?: Width;
+}
+const { colors, w = 'column' } = Astro.props;
+const light = (h: string) => {
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  return 0.299 * r + 0.587 * g + 0.114 * b > 160;
+};
+---
+
+<ul class="blk pal" data-w={dataW(w)} role="list">
+  {
+    colors.map((c) => (
+      <li style={`--c:${c.hex}`} class:list={{ 'is-light': light(c.hex) }}>
+        <span class="pal-sw" aria-hidden="true"><span>Aa</span></span>
+        <span class="pal-name">{c.name}</span>
+        <span class="pal-hex tab">{c.hex.toUpperCase()}</span>
+        {c.role && <span class="pal-role">{c.role}</span>}
+      </li>
+    ))
+  }
+</ul>

@@ -1,0 +1,184 @@
+---
+# ─────────────────────────────────────────────────────────────────────────────
+# Case study template. This file is a draft, so it only shows up in the Studio
+# preview (/lab → page picker). Copy it with `npm run new -- "Project name"`.
+# Every block is shown once below; delete what you do not need.
+# ─────────────────────────────────────────────────────────────────────────────
+title: Case study template
+summary: One sentence that says what this is and who it is for. Keep it under 150 characters.
+description: The longer line search engines and link previews show. Name the project, what it is and your part in it, in about 150–160 characters.
+order: 99
+draft: true
+featured: false
+kind: case-study
+role: Lead designer · research, interaction, prototyping
+period: Oct 2025 – Feb 2026
+duration: 16 weeks
+team: [Two designers, One engineer]
+client: Example client
+context: Semester 7 · University project
+disciplines: [UX Research, Interaction Design, Prototyping]
+platforms: [iPadOS, visionOS]
+tools: [Figma, SwiftUI, Reality Composer]
+cover: ../../assets/work/case-study-template/cover.png
+coverAlt: Placeholder cover showing an app screen on a light surface.
+accent: '#3d5afe'
+status: in-progress
+glance:
+  challenge: The problem in one or two sentences, from the point of view of the people who have it.
+  approach: What you did about it, and the one idea that made the difference.
+  outcome: What changed. A result you measured, what people said in tests, or what happened next.
+links:
+  - label: Open the prototype
+    url: https://example.com
+    type: prototype
+  - label: Watch the film
+    url: https://example.com
+    type: video
+credits:
+  - name: Name Surname
+    role: Research
+  - name: Name Surname
+    role: Engineering
+    url: https://example.com
+---
+import Figure from '../../components/blocks/Figure.astro';
+import Gallery from '../../components/blocks/Gallery.astro';
+import Compare from '../../components/blocks/Compare.astro';
+import Annotate from '../../components/blocks/Annotate.astro';
+import Stats from '../../components/blocks/Stats.astro';
+import Quote from '../../components/blocks/Quote.astro';
+import Decision from '../../components/blocks/Decision.astro';
+import Steps from '../../components/blocks/Steps.astro';
+import Note from '../../components/blocks/Note.astro';
+import Palette from '../../components/blocks/Palette.astro';
+import Embed from '../../components/blocks/Embed.astro';
+import screen from '../../assets/work/case-study-template/screen.png';
+import before from '../../assets/work/case-study-template/before.png';
+import after from '../../assets/work/case-study-template/after.png';
+import photo from '../../assets/work/case-study-template/photo.jpg';
+import phone1 from '../../assets/work/case-study-template/phone-1.png';
+import phone2 from '../../assets/work/case-study-template/phone-2.png';
+import phone3 from '../../assets/work/case-study-template/phone-3.png';
+
+## Context
+
+Start with the situation, not the solution. Who was involved, what was going wrong for them and why it mattered. Two short paragraphs are enough. Someone who reads only this section and the "At a glance" card above should understand the project.
+
+Then say what you were asked to do, or what you set out to do, and what constrained you: time, technology, access to users, a brief.
+
+<Figure src={photo} alt="Placeholder photo of the setting where the project takes place." caption="A photo of the real context: the place, the people, the existing product. Full width works well here." w="full" />
+
+## Research
+
+What you did to understand the problem and what you found. Lead with the findings, then the methods. Three findings you can defend beat ten you cannot.
+
+<Steps
+  items={[
+    { title: 'Interviews', text: 'Eight people who do this work every week.', meta: 'Week 1–2' },
+    { title: 'Observation', text: 'Two shifts on site, notes and photos.', meta: 'Week 3' },
+    { title: 'Synthesis', text: 'Clustering, journey map, three findings.', meta: 'Week 4' },
+  ]}
+/>
+
+<Quote by="Participant 4" role="Research interview">
+  A sentence a participant actually said that captures the problem better than you could.
+</Quote>
+
+<Note label="Finding">
+  State each finding as a fact about people, not about your design. "Commanders lose track of units when the map changes" is a finding. "We need a better map" is not.
+</Note>
+
+## Exploration
+
+Show the paths you did not take, and why. This is where readers see how you think.
+
+<Gallery cols={3} caption="Early sketches or wireframes. Three options side by side, captioned with what each one tried.">
+  <Figure src={screen} alt="Placeholder for an early concept." frame="mat" />
+  <Figure src={before} alt="Placeholder for a second concept." frame="mat" />
+  <Figure src={after} alt="Placeholder for a third concept." frame="mat" />
+</Gallery>
+
+<Decision
+  title="Where should the controls live?"
+  options={[
+    { name: 'On screen', text: 'Familiar, but hides the model behind the interface.' },
+    { name: 'On the table', text: 'Physical tokens that people pick up and move.', chosen: true },
+    { name: 'Voice', text: 'Hands free, but unreliable in a loud room.' },
+  ]}
+>
+  Explain the choice in two or three sentences, and say what evidence decided it: a test, a constraint, a principle.
+</Decision>
+
+## Design
+
+The final design, explained. Lead with the parts that carry the idea; skip what any competent product would have.
+
+<Annotate
+  src={screen}
+  alt="Placeholder app screen with numbered notes."
+  notes={[
+    { x: 12, y: 30, title: 'Navigation', text: 'Why it is here and what it replaced.' },
+    { x: 48, y: 12, title: 'Title', text: 'One line per note. Hover a note to find it on the image.' },
+    { x: 85, y: 12, title: 'Primary action', text: 'The one thing people do most.' },
+    { x: 60, y: 48, title: 'List', text: 'What you learned in testing that shaped it.' },
+  ]}
+  caption="Annotated screen. Up to six notes; more than that belongs in its own section."
+/>
+
+<Compare before={before} after={after} beforeAlt="Placeholder of the screen before the redesign." afterAlt="Placeholder of the screen after the redesign." caption="Drag to compare. Use the same size and framing for both images." />
+
+<Gallery layout="strip" caption="A strip of phone screens. Scroll sideways; on a trackpad, swipe.">
+  <Figure src={phone1} alt="Placeholder phone screen one." frame="phone" />
+  <Figure src={phone2} alt="Placeholder phone screen two." frame="phone" />
+  <Figure src={phone3} alt="Placeholder phone screen three." frame="phone" />
+  <Figure src={phone1} alt="Placeholder phone screen four." frame="phone" />
+  <Figure src={phone2} alt="Placeholder phone screen five." frame="phone" />
+</Gallery>
+
+<Palette
+  colors={[
+    { name: 'Ink', hex: '#121211', role: 'Text' },
+    { name: 'Paper', hex: '#fafaf8', role: 'Background' },
+    { name: 'Signal', hex: '#3d5afe', role: 'Actions' },
+    { name: 'Alert', hex: '#e5533d', role: 'Danger only' },
+  ]}
+/>
+
+## Prototype and testing
+
+How you built the prototype, who tested it and what changed because of it.
+
+<Embed src="https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ" title="Prototype walkthrough" poster={screen} caption="Figma, ProtoPie, YouTube or Vimeo. Nothing loads from the other service until someone clicks." />
+
+```swift
+// Code reads well in a case study when it shows a decision.
+struct TokenView: View {
+    @State private var isLifted = false
+    var body: some View {
+        Circle()
+            .scaleEffect(isLifted ? 1.08 : 1)
+            .animation(.spring(duration: 0.35, bounce: 0.2), value: isLifted)
+    }
+}
+```
+
+## Outcome
+
+What happened. Use numbers only when you measured them, and say how.
+
+<Stats
+  items={[
+    { value: '8 / 8', label: 'participants finished the main task', note: 'Moderated test, round 2' },
+    { value: '−40%', label: 'time to find a unit on the map', note: 'Compared with the current tool' },
+    { value: '2', label: 'teams piloting the concept', note: 'As of February 2026' },
+  ]}
+/>
+
+## Reflection
+
+What you would do differently, and what you are taking to the next project. Short and honest reads as senior.
+
+<Note label="What I learned">
+  One or two lessons that are specific to this project. Avoid general statements like "communication is key".
+</Note>

@@ -1,17 +1,22 @@
 ---
-/** Lays out two or more figures side by side; stacks on narrow screens. */
+/**
+ * Several figures side by side, or a strip that scrolls sideways.
+ * <Gallery cols={3}><Figure … /><Figure … /><Figure … /></Gallery>
+ * <Gallery layout="strip"> for many phone screens.
+ */
+import { dataW, type Width } from './width';
+import '../../styles/site/blocks.css';
+
+interface Props {
+  cols?: 2 | 3 | 4;
+  layout?: 'grid' | 'strip';
+  w?: Width;
+  caption?: string;
+}
+const { cols = 2, layout = 'grid', w = 'column', caption } = Astro.props;
 ---
 
-<div class="gallery"><slot /></div>
-
-<style>
-  .gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
-    gap: var(--gap);
-    margin-block: clamp(28px, 4vw, 48px);
-  }
-  .gallery :global(.figure) {
-    margin: 0;
-  }
-</style>
+<figure class:list={['blk gal', `gal--${layout}`]} data-w={dataW(layout === 'strip' ? 'full' : w)} style={`--cols:${cols}`}>
+  <div class="gal-in" tabindex={layout === 'strip' ? 0 : undefined} role={layout === 'strip' ? 'group' : undefined} aria-label={layout === 'strip' ? 'Scrollable gallery' : undefined}><slot /></div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>

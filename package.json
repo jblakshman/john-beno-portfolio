@@ -9,6 +9,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
+    "new": "node scripts/new-project.mjs",
+    "media": "node scripts/media.mjs",
     "deploy": "astro build && wrangler deploy"
   },
   "engines": {
